@@ -14,12 +14,15 @@ namespace Common.Model
         public double Amount { get; set; }
         public bool ToVerify { get; set; }
         public ModeOfPayment ModeOfPayment { get; set; }
-        public FinancialMonth FinancialMonth { get; set; }
+
+
+
 
         // FKs
         public int CategoryId { get; set; }
         public int SubcategoryId { get; set; }
         public int UserId { get; set; }
+        public string FinanialMonthId {  get; set; }
 
         // Navigation property: Each transaction has one category
         public Category Category { get; set; }
@@ -28,5 +31,7 @@ namespace Common.Model
         public Subcategory Subcategory { get; set; }
         // Navigation property: Each transaction has one user
         public User User { get; set; }
+        //Navigation property: each transaction has one FinancialMonth
+        public FinancialMonth FinancialMonth { get; set; }
     }
 }

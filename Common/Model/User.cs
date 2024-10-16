@@ -7,5 +7,6 @@
 
         // Navigation property
         public ICollection<Transaction> Transactions { get; set; }
+        public ICollection<MonthlyIncomeAfterTax> MonthlyIncomesAfterTax { get; set; }
     }
 }

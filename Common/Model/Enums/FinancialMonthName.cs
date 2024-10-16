@@ -1,6 +1,6 @@
 ﻿namespace Common.Model.Enums
 {
-    public enum FinancialMonth
+    public enum FinancialMonthName
     {
         JAN = 1,
         FEB = 2,
