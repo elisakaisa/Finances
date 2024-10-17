@@ -2,6 +2,7 @@
 {
     public enum ModeOfPayment
     {
+        NA,
         Debit,
         Transfer,
         Swish,

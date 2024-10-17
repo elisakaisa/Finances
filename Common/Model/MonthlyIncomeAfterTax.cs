@@ -1,6 +1,4 @@
-﻿using Common.Model.Enums;
-
-namespace Common.Model
+﻿namespace Common.Model
 {
     public class MonthlyIncomeAfterTax
     {
@@ -9,7 +7,7 @@ namespace Common.Model
 
         // FK
         public int UserId { get; set; }
-        public string FinancialMonthId { get; set; }
+        public Guid FinancialMonthId { get; set; }
 
         // NavigationProperty
         public User User { get; set; }

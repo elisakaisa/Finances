@@ -7,10 +7,11 @@ namespace Common.Model
         public Guid Id { get; set; }
         public string Description { get; set; }
         public DateOnly Date { get; set; }
-        public string FromOrTo { get; set; }
-        public string Location { get; set; }
+        public string? FromOrTo { get; set; }
+        public string? Location { get; set; }
         public bool ExcludeFromSummary { get; set; }
         public SplitType SplitType { get; set; }
+        public string? Split {  get; set; }
         public double Amount { get; set; }
         public bool ToVerify { get; set; }
         public ModeOfPayment ModeOfPayment { get; set; }
@@ -22,7 +23,7 @@ namespace Common.Model
         public int CategoryId { get; set; }
         public int SubcategoryId { get; set; }
         public int UserId { get; set; }
-        public string FinanialMonthId {  get; set; }
+        public Guid FinancialMonthId {  get; set; }
 
         // Navigation property: Each transaction has one category
         public Category Category { get; set; }
