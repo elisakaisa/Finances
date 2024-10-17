@@ -1,4 +1,4 @@
-﻿namespace Common.Model
+﻿namespace Common.Model.DatabaseObjects
 {
     public class Household
     {

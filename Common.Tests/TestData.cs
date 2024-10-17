@@ -1,19 +1,19 @@
-﻿using Common.Model;
+﻿using Common.Model.DatabaseObjects;
 using Common.Model.Enums;
 
 namespace Common.Tests
 {
     public class TestData
     {
-        public static readonly Guid Household1 = Guid.Parse("00000000-0000-0000-000000000010");
-        public static readonly Guid Household2 = Guid.Parse("00000000-0000-0000-000000000020");
+        public static readonly Guid Household1 = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        public static readonly Guid Household2 = Guid.Parse("00000000-0000-0000-0000-000000000020");
 
-        public static readonly Guid User1Hh1 = Guid.Parse("00000000-0000-0000-000000000011");
-        public static readonly Guid User2Hh1 = Guid.Parse("00000000-0000-0000-000000000012");
+        public static readonly Guid User1Hh1 = Guid.Parse("00000000-0000-0000-0000-000000000011");
+        public static readonly Guid User2Hh1 = Guid.Parse("00000000-0000-0000-0000-000000000012");
 
-        public static readonly Guid FinancialMonthDecHh1 = Guid.Parse("00000000-0012-0000-000000000010");
-        public static readonly Guid FinancialMonthJanHh1 = Guid.Parse("00000000-0001-0000-000000000010");
-        public static readonly Guid FinancialMonthFebHh1 = Guid.Parse("00000000-0002-0000-000000000010");
+        public static readonly Guid FinancialMonthDecHh1 = Guid.Parse("00000000-0000-0012-0000-000000000010");
+        public static readonly Guid FinancialMonthJanHh1 = Guid.Parse("00000000-0000-0001-0000-000000000010");
+        public static readonly Guid FinancialMonthFebHh1 = Guid.Parse("00000000-0000-0002-0000-000000000010");
 
         public Household Household10 = new()
         {
@@ -47,14 +47,14 @@ namespace Common.Tests
         // Users in household 2
         public User User21 = new()
         {
-            Id = Guid.Parse("00000000-0000-0000-000000000021"),
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000021"),
             Name = "User21",
             HouseholdId = Household2
         };
 
         public User User22 = new()
         {
-            Id = Guid.Parse("00000000-0000-0000-000000000022"),
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000022"),
             Name = "User22",
             HouseholdId = Household2
         };
@@ -98,14 +98,14 @@ namespace Common.Tests
             Id = 11,
             Name = "Salary",
             CategoryId = 1,
-            State = Model.Enums.State.Active
+            State = State.Active
         };
         public static Subcategory IncomeMisc = new()
         {
             Id = 12,
             Name = "IncomeMisc",
             CategoryId = 1,
-            State = Model.Enums.State.Active
+            State = State.Active
         };
 
         public Category Income = new()
@@ -119,14 +119,14 @@ namespace Common.Tests
             Id = 21,
             Name = "Electricity",
             CategoryId = 1,
-            State = Model.Enums.State.Active
+            State = State.Active
         };
         public static Subcategory HomeInsurance = new()
         {
             Id = 22,
             Name = "HomeInsurance",
             CategoryId = 1,
-            State = Model.Enums.State.Active
+            State = State.Active
         };
 
         public Category Utilities = new()
@@ -138,10 +138,15 @@ namespace Common.Tests
 
 
 
-        // Transactions
-        public static Transaction transaction1 = new()
+        // Generic Transactions without user / household
+        public static List<Transaction> TestTransactions =
+        [
+            genericExpense1, genericIncome1, genericExpense2, genericIncome2
+        ];
+
+        public static Transaction genericExpense1 = new()
         {
-            Id = Guid.Parse("10000000-0000-0000-000000000000"),
+            Id = Guid.Parse("10000000-0000-0000-0000-000000000000"),
             Description = "Home insurance",
             Date = new DateOnly(2024, 10, 17),
             FromOrTo = "Insur",
@@ -157,12 +162,10 @@ namespace Common.Tests
             // Foreign Keys
             CategoryId = 2,
             SubcategoryId = 22, 
-            UserId = User1Hh1,
-            FinancialMonthId = FinancialMonthDecHh1
         };
-        public static Transaction transaction2 = new()
+        public static Transaction genericIncome1 = new()
         {
-            Id = Guid.Parse("20000000-0000-0000-000000000000"),
+            Id = Guid.Parse("20000000-0000-0000-0000-000000000000"),
             Description = "Salary",
             Date = new DateOnly(2024, 10, 17),
             FromOrTo = "Employer",
@@ -178,12 +181,10 @@ namespace Common.Tests
             // Foreign Keys
             CategoryId = 1,
             SubcategoryId = 11,
-            UserId = User1Hh1,
-            FinancialMonthId = FinancialMonthDecHh1
         };
-        public static Transaction transaction3 = new()
+        public static Transaction genericExpense2 = new()
         {
-            Id = Guid.Parse("30000000-0000-0000-000000000000"),
+            Id = Guid.Parse("30000000-0000-0000-0000-000000000000"),
             Description = "Electricity",
             Date = new DateOnly(2024, 10, 17),
             FromOrTo = "El",
@@ -199,12 +200,10 @@ namespace Common.Tests
             // Foreign Keys
             CategoryId = 2,
             SubcategoryId = 21,
-            UserId = User1Hh1,
-            FinancialMonthId = FinancialMonthDecHh1
         };
-        public static Transaction transaction4 = new()
+        public static Transaction genericIncome2 = new()
         {
-            Id = Guid.Parse("40000000-0000-0000-000000000000"),
+            Id = Guid.Parse("40000000-0000-0000-0000-000000000000"),
             Description = "Interest",
             Date = new DateOnly(2024, 10, 17),
             FromOrTo = "Bank",
@@ -220,8 +219,6 @@ namespace Common.Tests
             // Foreign Keys
             CategoryId = 1,
             SubcategoryId = 12,
-            UserId = User1Hh1,
-            FinancialMonthId = FinancialMonthDecHh1
         };
 
 

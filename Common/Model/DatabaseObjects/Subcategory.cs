@@ -1,6 +1,6 @@
 ﻿using Common.Model.Enums;
 
-namespace Common.Model
+namespace Common.Model.DatabaseObjects
 {
     public class Subcategory
     {

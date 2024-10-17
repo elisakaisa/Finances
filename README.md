@@ -5,3 +5,10 @@ The API should be able to calculate total monthly expenses by category and sucat
 
 ## Approach
 ASP.NET API, using a SQL database. Code first approach using Entity Framework Core. Test-driven development. Controller-Service-Repository-Database Architecture.
+
+## TODO
+- set up database
+- refine database objects
+- set up dependency injection
+- implement service & repo methods
+- create API project

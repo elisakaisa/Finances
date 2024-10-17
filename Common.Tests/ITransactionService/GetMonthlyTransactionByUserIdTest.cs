@@ -1,4 +1,3 @@
-using Common.Model;
 using Common.Repositories.Interfaces;
 using Common.Services;
 using Moq;
@@ -16,13 +15,9 @@ namespace Common.Tests.ITransactionService
         public async Task GetMonthlyTransactionByUserId_ReturnsMonthlyTransactions()
         {
             // Arrange
-            var testTransactions = new List<Transaction>() 
-            { 
-                TestData.transaction1, TestData.transaction2, TestData.transaction3, TestData.transaction4 
-            };
             var repo = new Mock<ITransactionRepository>();
             repo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), "2024-12"))
-                .ReturnsAsync(testTransactions);
+                .ReturnsAsync(TestData.TestTransactions);
 
             // Act
             var sut = new TransactionService(repo.Object);
@@ -30,7 +25,7 @@ namespace Common.Tests.ITransactionService
 
 
             //Assert
-            Assert.Equals(testTransactions.Count, result.Count);
+            Assert.Equals(TestData.TestTransactions.Count, result.Count);
         }
     }
 }
