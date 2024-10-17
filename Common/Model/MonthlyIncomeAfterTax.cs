@@ -6,7 +6,7 @@
         public decimal IncomeAfterTax { get; set; }
 
         // FK
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public Guid FinancialMonthId { get; set; }
 
         // NavigationProperty
