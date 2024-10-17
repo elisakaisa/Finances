@@ -30,7 +30,7 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<Transaction>> GetMonthlyTransactionsByUserIdAsync(int userId, string monthYear)
+        public Task<ICollection<Transaction>> GetMonthlyTransactionsByUserIdAsync(Guid userId, string monthYear)
         {
             throw new NotImplementedException();
         }
@@ -40,7 +40,7 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<Transaction>> GetYearlyTransactionsByUserIdAsync(int userId, int year)
+        public Task<ICollection<Transaction>> GetYearlyTransactionsByUserIdAsync(Guid userId, int year)
         {
             throw new NotImplementedException();
         }

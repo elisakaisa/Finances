@@ -10,6 +10,7 @@ namespace Common.Model
         public string? FromOrTo { get; set; }
         public string? Location { get; set; }
         public bool ExcludeFromSummary { get; set; }
+        public TransactionType TransactionType { get; set; }
         public SplitType SplitType { get; set; }
         public string? Split {  get; set; }
         public double Amount { get; set; }

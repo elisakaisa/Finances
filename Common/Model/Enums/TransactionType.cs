@@ -3,7 +3,7 @@
     public enum TransactionType
     {
         Income,
-        Expense,
+        Expenses,
         Savings,
         Payback
     }

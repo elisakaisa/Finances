@@ -4,4 +4,4 @@ Logic is based on the spreadsheet I've made that me and my partner have been usi
 The API should be able to calculate total monthly expenses by category and sucategory, as well as split expenses between users in different ways.
 
 ## Approach
-ASP.NET API, using a SQL database. Code first approach using Entity Framework Core.
+ASP.NET API, using a SQL database. Code first approach using Entity Framework Core. Test-driven development. Controller-Service-Repository-Database Architecture.
