@@ -3,27 +3,27 @@ using Common.Model.Enums;
 
 namespace Common.Tests
 {
-    public class TestData
+    public class GeneralTestData
     {
-        public static readonly Guid Household1 = Guid.Parse("00000000-0000-0000-0000-000000000010");
-        public static readonly Guid Household2 = Guid.Parse("00000000-0000-0000-0000-000000000020");
+        public static readonly Guid Household1Id = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        public static readonly Guid Household2Id = Guid.Parse("00000000-0000-0000-0000-000000000020");
 
-        public static readonly Guid User1Hh1 = Guid.Parse("00000000-0000-0000-0000-000000000011");
-        public static readonly Guid User2Hh1 = Guid.Parse("00000000-0000-0000-0000-000000000012");
+        public static readonly Guid User1Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000011");
+        public static readonly Guid User2Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000012");
 
-        public static readonly Guid FinancialMonthDecHh1 = Guid.Parse("00000000-0000-0012-0000-000000000010");
-        public static readonly Guid FinancialMonthJanHh1 = Guid.Parse("00000000-0000-0001-0000-000000000010");
-        public static readonly Guid FinancialMonthFebHh1 = Guid.Parse("00000000-0000-0002-0000-000000000010");
+        public static readonly Guid FinancialMonthDecHh1Id = Guid.Parse("00000000-0000-0012-0000-000000000010");
+        public static readonly Guid FinancialMonthJanHh1Id = Guid.Parse("00000000-0000-0001-0000-000000000010");
+        public static readonly Guid FinancialMonthFebHh1Id = Guid.Parse("00000000-0000-0002-0000-000000000010");
 
         public Household Household10 = new()
         {
-            Id = Household1,
+            Id = Household1Id,
             Name = "Household10"
         };
 
         public Household Household20 = new()
         {
-            Id = Household2,
+            Id = Household2Id,
             Name = "Household20"
         };
 
@@ -31,16 +31,16 @@ namespace Common.Tests
         // Users in household 1
         public User User11 = new()
         {
-            Id = User1Hh1,
+            Id = User1Hh1Id,
             Name = "User11",
-            HouseholdId = Household1
+            HouseholdId = Household1Id
         };
 
         public User User12 = new()
         {
-            Id = User2Hh1,
+            Id = User2Hh1Id,
             Name = "User12",
-            HouseholdId = Household1
+            HouseholdId = Household1Id
         };
 
 
@@ -49,46 +49,46 @@ namespace Common.Tests
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000021"),
             Name = "User21",
-            HouseholdId = Household2
+            HouseholdId = Household2Id
         };
 
         public User User22 = new()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000022"),
             Name = "User22",
-            HouseholdId = Household2
+            HouseholdId = Household2Id
         };
 
 
         // FinancialMonths
         public FinancialMonth financialMonthDecHh1 = new()
         {
-            Id = FinancialMonthDecHh1,
+            Id = FinancialMonthDecHh1Id,
             Name = "2024-12",
             FinancialMonthName = FinancialMonthName.DEC,
             FinancialYear = 2024,
 
-            HouseholdId = Household1
+            HouseholdId = Household1Id
         };
 
         public FinancialMonth financialMonthDecHh2 = new()
         {
-            Id = FinancialMonthJanHh1,
+            Id = FinancialMonthJanHh1Id,
             Name = "2025-01",
             FinancialMonthName = FinancialMonthName.JAN,
             FinancialYear = 2025,
 
-            HouseholdId = Household1
+            HouseholdId = Household1Id
         };
 
         public FinancialMonth financialMonthFebHh2 = new()
         {
-            Id = FinancialMonthJanHh1,
+            Id = FinancialMonthJanHh1Id,
             Name = "2025-02",
             FinancialMonthName = FinancialMonthName.JAN,
             FinancialYear = 2025,
 
-            HouseholdId = Household1
+            HouseholdId = Household1Id
         };
 
 
@@ -154,8 +154,8 @@ namespace Common.Tests
             ExcludeFromSummary = false,
             TransactionType = TransactionType.Expenses,
             SplitType = SplitType.Individual,
-            Split = null,
-            Amount = 150.75,
+            UserShare = null,
+            Amount = 150.75m,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Debit,
 
@@ -173,7 +173,7 @@ namespace Common.Tests
             ExcludeFromSummary = false,
             TransactionType = TransactionType.Income,
             SplitType = SplitType.Individual,
-            Split = null,
+            UserShare = null,
             Amount = 15000,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Transfer,
@@ -192,7 +192,7 @@ namespace Common.Tests
             ExcludeFromSummary = false,
             TransactionType = TransactionType.Expenses,
             SplitType = SplitType.Individual,
-            Split = null,
+            UserShare = null,
             Amount = 120,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Debit,
@@ -211,8 +211,8 @@ namespace Common.Tests
             ExcludeFromSummary = false,
             TransactionType = TransactionType.Income,
             SplitType = SplitType.Individual,
-            Split = null,
-            Amount = 15.23,
+            UserShare = null,
+            Amount = 15.23m,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Transfer,
 

@@ -17,15 +17,15 @@ namespace Common.Tests.ITransactionService
             // Arrange
             var repo = new Mock<ITransactionRepository>();
             repo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), "2024-12"))
-                .ReturnsAsync(TestData.TestTransactions);
+                .ReturnsAsync(GeneralTestData.TestTransactions);
 
             // Act
             var sut = new TransactionService(repo.Object);
-            var result = await sut.GetMonthlyTransactionsByUserId(TestData.User1Hh1);
+            var result = await sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id);
 
 
             //Assert
-            Assert.Equals(TestData.TestTransactions.Count, result.Count);
+            Assert.Equals(GeneralTestData.TestTransactions.Count, result.Count);
         }
     }
 }

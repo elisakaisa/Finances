@@ -5,6 +5,6 @@
         Income,
         Expenses,
         Savings,
-        Payback
+        //Payback //Payaback = negative expense
     }
 }

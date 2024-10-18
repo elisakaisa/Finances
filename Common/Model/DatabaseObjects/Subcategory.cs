@@ -7,6 +7,7 @@ namespace Common.Model.DatabaseObjects
         public int Id { get; set; }
         public string Name { get; set; }
         public State State { get; set; }
+        public TransactionType TransactionType { get; set; }
 
         // FK
         public int CategoryId { get; set; }

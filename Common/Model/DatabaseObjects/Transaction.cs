@@ -12,8 +12,8 @@ namespace Common.Model.DatabaseObjects
         public bool ExcludeFromSummary { get; set; }
         public TransactionType TransactionType { get; set; }
         public SplitType SplitType { get; set; }
-        public string? Split { get; set; }
-        public double Amount { get; set; }
+        public decimal? UserShare { get; set; }
+        public decimal Amount { get; set; }
         public bool ToVerify { get; set; }
         public ModeOfPayment ModeOfPayment { get; set; }
 
