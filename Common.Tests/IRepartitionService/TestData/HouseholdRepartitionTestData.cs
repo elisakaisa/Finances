@@ -5,6 +5,36 @@ namespace Common.Tests.IRepartitionService.TestData
 {
     public class HouseholdRepartitionTestData
     {
+        public Household GetHouseholdWith1User()
+        {
+            return new()
+            {
+                Id = GeneralTestData.Household1Id,
+                Name = "Household10",
+                Users = [ new User() { Id = GeneralTestData.User1Hh1Id }]
+            };
+        }
+
+        public Household GetHouseholdWith2Users()
+        {
+            return new()
+            {
+                Id = GeneralTestData.Household1Id,
+                Name = "Household10",
+                Users = [new User() { Id = GeneralTestData.User1Hh1Id }, new User() { Id = GeneralTestData.User2Hh1Id }]
+            };
+        }
+
+        public Household GetHouseholdWith3Users()
+        {
+            return new()
+            {
+                Id = GeneralTestData.Household1Id,
+                Name = "Household10",
+                Users = [new User() { Id = GeneralTestData.User1Hh1Id }, new User() { Id = GeneralTestData.User2Hh1Id }, new User() { Id = GeneralTestData.User1Hh1Id }]
+            };
+        }
+
         public List<Transaction> GetTransactionsForSingleHousehold()
         {
             return
@@ -148,6 +178,64 @@ namespace Common.Tests.IRepartitionService.TestData
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Custom,
                     UserShare = userShare,
+                    UserId = GeneralTestData.User1Hh1Id
+                }
+            ];
+        }
+
+        public List<Transaction> GetTwoTransactionByUsersWithCustomSplit(decimal amount1, decimal userShare1, decimal amount2, decimal userShare2)
+        {
+            return
+            [
+                new()
+                {
+                    Amount = amount1,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.Custom,
+                    UserShare = userShare1,
+                    UserId = GeneralTestData.User1Hh1Id
+                },
+                new()
+                {
+                    Amount = amount2,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.Custom,
+                    UserShare = userShare2,
+                    UserId = GeneralTestData.User1Hh1Id
+                }
+            ];
+        }
+
+        public List<Transaction> GetSingleTransactionByUser1WithSplitByIncome(decimal amount)
+        {
+            return
+            [
+                new()
+                {
+                    Amount = amount,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.IncomeBased,
+                    UserId = GeneralTestData.User1Hh1Id
+                }
+            ];
+        }
+
+        public List<Transaction> GetTwoTransactionByUsersWithSplitByIncome(decimal amount1, decimal amount2)
+        {
+            return
+            [
+                new()
+                {
+                    Amount = amount1,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.IncomeBased,
+                    UserId = GeneralTestData.User1Hh1Id
+                },
+                new()
+                {
+                    Amount = amount2,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.IncomeBased,
                     UserId = GeneralTestData.User1Hh1Id
                 }
             ];
