@@ -1,4 +1,5 @@
-﻿using Common.Model.Dtos;
+﻿using Common.Model.DatabaseObjects;
+using Common.Model.Dtos;
 using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
@@ -43,67 +44,56 @@ namespace Common.Services
             var user1 = household.Users.First();
             var user2 = household.Users.Last();
 
-            var incomeUser1 = monthlyIncomeAfterTax.First(i => i.UserId == user1.Id).IncomeAfterTax;
-            var incomeUser2 = monthlyIncomeAfterTax.First(i => i.UserId == user2.Id).IncomeAfterTax;
+            var incomeUser1 = GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user1.Id);
+            var incomeUser2 = GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user2.Id);
 
-            //TODO: turn these into extension method
             var householdIncome = incomeUser1 + incomeUser2;
-            var user1ShareOfHouseholdIncome = 0.5m;
-            var user2ShareOfHouseholdIncome = 0.5m;
-            if (householdIncome != 0)
-            {
-                user1ShareOfHouseholdIncome = incomeUser1 / householdIncome;
-                user2ShareOfHouseholdIncome = incomeUser2 / householdIncome;
-            }
 
-            var user1ShouldPay = 0m;
-            var user2ShouldPay = 0m;
+            var userSharesOfHouseholdIncome = new Dictionary<Guid, decimal>
+            {
+                { user1.Id, householdIncome == 0 ? 0.5m : incomeUser1 / householdIncome },
+                { user2.Id, householdIncome == 0 ? 0.5m : incomeUser2 / householdIncome },
+            };
+
             var totalCommonExpenses = 0m;
-            var commonExpensesPaidByUser1 = 0m;
-            var commonExpensesPaidByUser2 = 0m;
+
+            var commonExpensesPaidByUser = new Dictionary<Guid, decimal>
+            {
+                { user1.Id, 0m },
+                { user2.Id, 0m }
+            };
+            var userShouldPay = new Dictionary<Guid, decimal>
+            {
+                { user1.Id, 0m },
+                { user2.Id, 0m }
+            };
+
             foreach (var transaction in householdTransactions.Where(t => t.IsTransactionCommon()))
             {
                 totalCommonExpenses += transaction.Amount;
 
-                if (transaction.UserId == user1.Id) 
+                if (commonExpensesPaidByUser.ContainsKey(transaction.UserId))
                 {
-                    commonExpensesPaidByUser1 += transaction.Amount;
-                    if (transaction.SplitType == SplitType.Even)
-                    {
-                        user1ShouldPay += transaction.Amount/2;
-                        user2ShouldPay += transaction.Amount/2;
-                    }
-                    else if (transaction.SplitType == SplitType.IncomeBased)
-                    {
-                        user1ShouldPay += transaction.Amount * user1ShareOfHouseholdIncome;
-                        user2ShouldPay += transaction.Amount * user2ShareOfHouseholdIncome;
-                    }
-                    else if (transaction.SplitType == SplitType.Custom)
-                    {
-                        var user1Share = transaction.UserShare;
-                        user1ShouldPay += transaction.Amount * (decimal)user1Share;
-                        user2ShouldPay += transaction.Amount * (decimal)(1-user1Share);
-                    }
+                    commonExpensesPaidByUser[transaction.UserId] += transaction.Amount;
                 }
-                else if (transaction.UserId == user2.Id)
+
+                if (transaction.SplitType == SplitType.Even)
                 {
-                    commonExpensesPaidByUser2 += transaction.Amount;
-                    if (transaction.SplitType == SplitType.Even)
-                    {
-                        user1ShouldPay += transaction.Amount / 2;
-                        user2ShouldPay += transaction.Amount / 2;
-                    }
-                    else if (transaction.SplitType == SplitType.IncomeBased)
-                    {
-                        user1ShouldPay += transaction.Amount * user1ShareOfHouseholdIncome;
-                        user2ShouldPay += transaction.Amount * user2ShareOfHouseholdIncome;
-                    }
-                    else if (transaction.SplitType == SplitType.Custom)
-                    {
-                        var user2Share = transaction.UserShare;
-                        user1ShouldPay += transaction.Amount * (decimal)(1 - user2Share);
-                        user2ShouldPay += transaction.Amount * (decimal)user2Share;
-                    }
+                    userShouldPay[user1.Id] += transaction.Amount * 0.5m;
+                    userShouldPay[user2.Id] += transaction.Amount * 0.5m;
+                }
+                else if (transaction.SplitType == SplitType.IncomeBased)
+                {
+                    userShouldPay[user1.Id] += transaction.Amount * userSharesOfHouseholdIncome[user1.Id];
+                    userShouldPay[user2.Id] += transaction.Amount * userSharesOfHouseholdIncome[user2.Id];
+                }
+                else if (transaction.SplitType == SplitType.Custom)
+                {
+                    var userShare = (decimal) transaction.UserShare;
+                    var user1Share = transaction.UserId == user1.Id ? userShare : (1 - userShare);
+                    var user2Share = 1 - userShare;
+                    userShouldPay[user1.Id] += transaction.Amount * user1Share;
+                    userShouldPay[user2.Id] += transaction.Amount * user2Share;
                 }
             }
 
@@ -115,10 +105,10 @@ namespace Common.Services
                 IncomeAfterTaxUser1 = Math.Round(incomeUser1, 3),
                 IncomeAfterTaxUser2 = Math.Round(incomeUser2, 3),
                 TotalCommonExpenses = Math.Round(totalCommonExpenses, 3),
-                TotalCommonExpensesPaidByUser1 = Math.Round(commonExpensesPaidByUser1, 3),
-                TotalCommonExpensesPaidByUser2 = Math.Round(commonExpensesPaidByUser2, 3),
-                User1ShouldPay = Math.Round(user1ShouldPay, 3),
-                User2ShouldPay = Math.Round(user2ShouldPay, 3),
+                TotalCommonExpensesPaidByUser1 = Math.Round(commonExpensesPaidByUser[user1.Id], 3),
+                TotalCommonExpensesPaidByUser2 = Math.Round(commonExpensesPaidByUser[user2.Id], 3),
+                User1ShouldPay = Math.Round(userShouldPay[user1.Id], 3),
+                User2ShouldPay = Math.Round(userShouldPay[user2.Id], 3),
                 // TODO:
                 TargetShareUser1 = 0,
                 TargetShareUser2 = 0,
@@ -127,6 +117,11 @@ namespace Common.Services
             };
 
             return repartition;
+        }
+
+        private decimal GetMonthlyIncomeForUser(ICollection<MonthlyIncomeAfterTax> monthlyIncomes, Guid userId)
+        {
+            return monthlyIncomes.First(i => i.UserId == userId).IncomeAfterTax;
         }
     }
 }
