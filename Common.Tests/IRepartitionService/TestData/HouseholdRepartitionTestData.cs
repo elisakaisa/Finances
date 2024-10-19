@@ -241,6 +241,42 @@ namespace Common.Tests.IRepartitionService.TestData
             ];
         }
 
+        public List<Transaction> GetMultipleTransactionsByUser1WithVariousSplits(decimal amountIncomeBased, decimal amountEven, decimal amountCustom, decimal shareCustom, decimal amountIndividual)
+        {
+            return
+            [
+                new()
+                {
+                    Amount = amountIncomeBased,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.IncomeBased,
+                    UserId = GeneralTestData.User1Hh1Id
+                },
+                new()
+                {
+                    Amount = amountEven,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.Even,
+                    UserId = GeneralTestData.User1Hh1Id
+                },
+                new()
+                {
+                    Amount = amountCustom,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.Custom,
+                    UserShare = shareCustom,
+                    UserId = GeneralTestData.User1Hh1Id
+                },
+                new()
+                {
+                    Amount = amountIndividual,
+                    TransactionType = TransactionType.Expenses,
+                    SplitType = SplitType.Even,
+                    UserId = GeneralTestData.User1Hh1Id
+                }
+            ];
+        }
+
         public List<MonthlyIncomeAfterTax> GetMonthlyIncomesAfterTax(decimal income1, decimal income2)
         {
             return

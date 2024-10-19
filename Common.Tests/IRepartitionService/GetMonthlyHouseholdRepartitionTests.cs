@@ -69,9 +69,9 @@ namespace Common.Tests.IRepartitionService
         }
 
 
-        [TestCase(1, 2, 3, 4, 5, 6)]
+        [TestCase(1, 2, 3, 4, 0)]
         public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartition_IfHouseholdHas2UsersAndAllTransactionEvenlySplit
-            (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1, decimal actualShareU1, decimal actualShareU2)
+            (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1, decimal userShouldPay)
         {
             // Arrange
             var testTransactions = GetTransactionsWithOnlyEvenSplits(expense1U1, expense2U1, expense1U2, payback1U1);
@@ -90,14 +90,14 @@ namespace Common.Tests.IRepartitionService
             Assert.Equals(result.TotalCommonExpenses, testTransactions.SumHouseholdTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
             Assert.Equals(result.TotalCommonExpensesPaidByUser1, testTransactions.SumUserTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
             Assert.Equals(result.TotalCommonExpensesPaidByUser2, testTransactions.SumUserTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
-            Assert.Equals(result.ActualShareUser1, 0.5m);
-            Assert.Equals(result.ActualShareUser2, 0.5m);
-            Assert.Equals(result.TargetShareUser1, actualShareU1);
-            Assert.Equals(result.TargetShareUser2, actualShareU2);
+            Assert.Equals(result.TargetShareUser1, 0.5m);
+            Assert.Equals(result.TargetShareUser2, 0.5m);
+            Assert.Equals(result.User1ShouldPay, userShouldPay);
+            Assert.Equals(result.User2ShouldPay, userShouldPay);
         }
 
         [TestCase(1, 2, 3, 4)]
-        [TestCase(0, 0, 0, 0)]
+        [TestCase(0, 0, 0, 0)] // TODO: fix this case. Is it even needed?
         public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartition_IfHouseholdHas2UsersWithEqualIncomeAndAllTransactionSplitIncomeBased
             (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1)
         {
@@ -245,6 +245,38 @@ namespace Common.Tests.IRepartitionService
         {
             // Arrange
             var testTransactions = GetTwoTransactionByUsersWithSplitByIncome(transactionAmount1, transactionAmount2);
+            var montlyIncomeAfterTaxUser = GetMonthlyIncomesAfterTax(income1, income2);
+
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))
+                .ReturnsAsync(testTransactions);
+            _householdRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith2Users());
+
+            // Act
+            var sut = new RepartitionService(_transactionRepo.Object, _financialMonthRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.Equals(result.TotalCommonExpenses, testTransactions.SumHouseholdTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
+            Assert.Equals(result.TotalCommonExpensesPaidByUser1, testTransactions.SumUserTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
+            Assert.Equals(result.TotalCommonExpensesPaidByUser2, testTransactions.SumUserTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id));
+            Assert.Equals(result.User1ShouldPay, user1ShouldPay);
+            Assert.Equals(result.User2ShouldPay, user2ShouldPay);
+        }
+
+
+        [TestCase(0, 0, 0, 0, 0, 0, 0, 0, 0)]
+        [TestCase(1, 1, 1, 1, 1, 0, 0, 3, 1)]
+        [TestCase(1, 1, 1, 1, 1, 1, 0, 3.5, 0.5)]
+        [TestCase(1, 1, 1, 1, 1, 2, 1, 3.166, 0.833)]
+        [TestCase(1, 1, 1, 1, 1, 1, 2, 2.833, 1.166)]
+        [TestCase(1, 1, 1, 0.4, 1, 2, 1, 2.566, 1.433)]
+        [TestCase(1, 1, 1, 0, 1, 2, 1, 2.166, 1.833)]
+        public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartitionForMultipleTransactions_IfHouseholdHas2UsersWithInequalIncomeAndUser1HasTransactionsSplitInDifferentWays
+            (decimal amountIncomeBased, decimal amountEven, decimal amountCustom, decimal shareCustom, decimal amountIndividual, decimal income1, decimal income2, decimal user1ShouldPay, decimal user2ShouldPay)
+        {
+            // Arrange
+            var testTransactions = GetMultipleTransactionsByUser1WithVariousSplits(amountIncomeBased, amountEven, amountCustom, shareCustom, amountIndividual);
             var montlyIncomeAfterTaxUser = GetMonthlyIncomesAfterTax(income1, income2);
 
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))
