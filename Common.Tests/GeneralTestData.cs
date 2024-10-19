@@ -29,14 +29,14 @@ namespace Common.Tests
 
 
         // Users in household 1
-        public User User11 = new()
+        public static User User11 = new()
         {
             Id = User1Hh1Id,
             Name = "User11",
             HouseholdId = Household1Id
         };
 
-        public User User12 = new()
+        public static User User12 = new()
         {
             Id = User2Hh1Id,
             Name = "User12",

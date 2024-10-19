@@ -43,26 +43,31 @@ namespace Common.Tests.IRepartitionService.TestData
                 {
                     Amount = 123.45m,
                     TransactionType = TransactionType.Expenses,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 13.12m,
                     TransactionType = TransactionType.Expenses,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 102m,
                     TransactionType = TransactionType.Savings,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = -50.2m,
                     TransactionType = TransactionType.Expenses,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 10000m,
                     TransactionType = TransactionType.Income,
+                    User = GeneralTestData.User11,
                 }
 
             ];
@@ -77,42 +82,48 @@ namespace Common.Tests.IRepartitionService.TestData
                     Amount = expense1U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = expense2U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = expense1U2,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User2Hh1Id
+                    UserId = GeneralTestData.User2Hh1Id,
+                    User = GeneralTestData.User12,
                 },
                 new()
                 {
                     Amount = 102m,
                     TransactionType = TransactionType.Savings,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = -payback1U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 1234,
                     TransactionType = TransactionType.Income,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
 
             ];
@@ -127,42 +138,48 @@ namespace Common.Tests.IRepartitionService.TestData
                     Amount = expense1U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = expense2U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = expense1U2,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User2Hh1Id
+                    UserId = GeneralTestData.User2Hh1Id,
+                    User = GeneralTestData.User12,
                 },
                 new()
                 {
                     Amount = 102m,
                     TransactionType = TransactionType.Savings,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = -payback1U1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 1234,
                     TransactionType = TransactionType.Income,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
 
             ];
@@ -178,12 +195,13 @@ namespace Common.Tests.IRepartitionService.TestData
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Custom,
                     UserShare = userShare,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
             ];
         }
 
-        public List<Transaction> GetTwoTransactionByUsersWithCustomSplit(decimal amount1, decimal userShare1, decimal amount2, decimal userShare2)
+        public List<Transaction> GetTwoTransactionByUser1WithCustomSplit(decimal amount1, decimal userShare1, decimal amount2, decimal userShare2)
         {
             return
             [
@@ -193,7 +211,8 @@ namespace Common.Tests.IRepartitionService.TestData
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Custom,
                     UserShare = userShare1,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
@@ -201,7 +220,8 @@ namespace Common.Tests.IRepartitionService.TestData
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Custom,
                     UserShare = userShare2,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
             ];
         }
@@ -215,7 +235,8 @@ namespace Common.Tests.IRepartitionService.TestData
                     Amount = amount,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
             ];
         }
@@ -229,14 +250,16 @@ namespace Common.Tests.IRepartitionService.TestData
                     Amount = amount1,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = amount2,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
             ];
         }
@@ -250,14 +273,16 @@ namespace Common.Tests.IRepartitionService.TestData
                     Amount = amountIncomeBased,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.IncomeBased,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = amountEven,
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
@@ -265,14 +290,16 @@ namespace Common.Tests.IRepartitionService.TestData
                     TransactionType = TransactionType.Expenses,
                     SplitType = SplitType.Custom,
                     UserShare = shareCustom,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = amountIndividual,
                     TransactionType = TransactionType.Expenses,
-                    SplitType = SplitType.Even,
-                    UserId = GeneralTestData.User1Hh1Id
+                    SplitType = SplitType.Individual,
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 }
             ];
         }
@@ -284,12 +311,14 @@ namespace Common.Tests.IRepartitionService.TestData
                 new ()
                 {
                     IncomeAfterTax = income1,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
                 },
                 new ()
                 {
                     IncomeAfterTax = income2,
-                    UserId = GeneralTestData.User1Hh1Id
+                    UserId = GeneralTestData.User2Hh1Id,
+                    User = GeneralTestData.User12,
                 }
             ];
         }
