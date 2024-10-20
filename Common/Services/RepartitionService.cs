@@ -5,23 +5,20 @@ using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
-using System.Runtime.Intrinsics.X86;
 
 namespace Common.Services
 {
     public class RepartitionService : IRepartitionService
     {
         private readonly ITransactionRepository _transactionRepository;
-        private readonly IFinancialMonthRepository _financialMonthRepository;
         private readonly IMonthlyIncomeAfterTaxRepository _monthlyIncomeAfterTaxRepository;
         private readonly IHouseholdRepository _householdRepository;
 
         public RepartitionService(
-            ITransactionRepository transactionRepo, IFinancialMonthRepository financialMonthRepo,
+            ITransactionRepository transactionRepo,
             IMonthlyIncomeAfterTaxRepository monthlyIncomeAfterTaxRepo, IHouseholdRepository householdRepo) 
         { 
             _transactionRepository = transactionRepo;
-            _financialMonthRepository = financialMonthRepo;
             _monthlyIncomeAfterTaxRepository = monthlyIncomeAfterTaxRepo;
             _householdRepository = householdRepo;
         }
@@ -40,12 +37,46 @@ namespace Common.Services
             }
 
             var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, monthYear);
-            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAndByMonthAsync(householdId, monthYear);
+            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(householdId, monthYear);
 
-            return CalculateRepartition(household, monthlyIncomeAfterTax, householdTransactions);
+            return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, monthYear);
         }
 
-        private Repartition CalculateRepartition(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomeAfterTax, ICollection<Transaction> householdTransactions)
+        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year)
+        {
+            var household = await _householdRepository.GetByIdAsync(householdId);
+            if (household.Users.Count > 2)
+            {
+                throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
+            }
+
+            if (household.Users.Count == 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            return await CalculateYearlyRepartition(household, year);
+        }
+
+        private async Task<List<Repartition>> CalculateYearlyRepartition(Household household, int year)
+        {
+            var householdTransactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
+            var monthlyIncomesAfterTax = await _monthlyIncomeAfterTaxRepository.GetYearlyIncomeAfterTaxByHouseholdIdAsync(household.Id, year);
+            var financialMonths = InitializeFinancialMonths(year);
+
+            var yearlyRepartition = new List<Repartition>();
+
+            foreach (var financialMonth in financialMonths)
+            {
+                var monthlyTransactions = householdTransactions.Where(t => t.FinancialMonth == financialMonth).ToList();
+                var monthlyIncomes = monthlyIncomesAfterTax.Where(i => i.FinancialMonth == financialMonth).ToList();
+                var repartition = CalculateMonthlyRepartition(household, monthlyIncomes, monthlyTransactions, financialMonth);
+                yearlyRepartition.Add(repartition);
+            }
+            return yearlyRepartition;
+        }
+
+        private Repartition CalculateMonthlyRepartition(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomeAfterTax, ICollection<Transaction> householdTransactions, string monthYear)
         {
             var user1 = household.Users.First();
             var user2 = household.Users.Last();
@@ -66,6 +97,7 @@ namespace Common.Services
             {
                 Household = household,
                 Users = users,
+                MonthYear = monthYear,
                 IncomeAfterTax = incomeUser,
                 UserSharesOfHouseholdIncome = userSharesOfHouseholdIncome,
                 TotalCommonExpenses = Math.Round(0m, 3),
@@ -74,12 +106,12 @@ namespace Common.Services
                 // TODO:target shares
             };
 
-            ProcessTransactions(householdTransactions, repartition, user1.Id, user2.Id);
+            ProcessMonthlyTransactions(householdTransactions, repartition, user1.Id, user2.Id);
 
             return RoundRepartitionSums(repartition);
         }
 
-        private void ProcessTransactions(ICollection<Transaction> householdTransactions, Repartition repartition, Guid user1Id, Guid user2Id)
+        private void ProcessMonthlyTransactions(ICollection<Transaction> householdTransactions, Repartition repartition, Guid user1Id, Guid user2Id)
         {
             foreach (var transaction in householdTransactions.Where(t => t.IsTransactionCommon()))
             {
@@ -128,7 +160,21 @@ namespace Common.Services
 
         private decimal GetMonthlyIncomeForUser(ICollection<MonthlyIncomeAfterTax> monthlyIncomes, Guid userId)
         {
-            return monthlyIncomes.First(i => i.UserId == userId).IncomeAfterTax;
+            var monthlyIncome = monthlyIncomes.FirstOrDefault(i => i.UserId == userId);
+            if (monthlyIncome == null) return 0m;
+            return monthlyIncome.IncomeAfterTax;
+        }
+
+        private List<string> InitializeFinancialMonths(int year)
+        {
+            // TODO: this can be easily updated to show past 12 months instead of current year
+            var financialMonths = new List<string>();
+
+            for (int i = 1; i <= 12; i++)
+            {
+                financialMonths.Add($"{year}{i:D2}");
+            }
+            return financialMonths;
         }
     }
 }

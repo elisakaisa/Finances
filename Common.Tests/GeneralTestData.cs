@@ -60,38 +60,6 @@ namespace Common.Tests
         };
 
 
-        // FinancialMonths
-        public FinancialMonth financialMonthDecHh1 = new()
-        {
-            Id = FinancialMonthDecHh1Id,
-            Name = "2024-12",
-            FinancialMonthName = FinancialMonthName.DEC,
-            FinancialYear = 2024,
-
-            HouseholdId = Household1Id
-        };
-
-        public FinancialMonth financialMonthDecHh2 = new()
-        {
-            Id = FinancialMonthJanHh1Id,
-            Name = "2025-01",
-            FinancialMonthName = FinancialMonthName.JAN,
-            FinancialYear = 2025,
-
-            HouseholdId = Household1Id
-        };
-
-        public FinancialMonth financialMonthFebHh2 = new()
-        {
-            Id = FinancialMonthJanHh1Id,
-            Name = "2025-02",
-            FinancialMonthName = FinancialMonthName.JAN,
-            FinancialYear = 2025,
-
-            HouseholdId = Household1Id
-        };
-
-
         // Categories and subcategories
         public static Subcategory Salary = new()
         {

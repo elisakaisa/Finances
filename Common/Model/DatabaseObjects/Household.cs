@@ -7,6 +7,5 @@
 
         // Navigation properties
         public ICollection<User> Users { get; set; }
-        public ICollection<FinancialMonth> FinancialMonths { get; set; }
     }
 }

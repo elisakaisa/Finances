@@ -20,22 +20,22 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAndByMonthAsync(Guid userId, string monthYear)
+        public Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAsync(Guid userId, string monthYear)
         {
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAndByYearAsync(Guid userId, int year)
+        public Task<ICollection<MonthlyIncomeAfterTax>> GetYearlyIncomeAfterTaxByHouseholdIdAsync(Guid userId, int year)
         {
             throw new NotImplementedException();
         }
 
-        public Task<MonthlyIncomeAfterTax> GetMonthlyIncomeAfterTaxByUserIdAndByMonthAsync(Guid userId, string monthYear)
+        public Task<MonthlyIncomeAfterTax> GetMonthlyIncomeAfterTaxByUserIdAsync(Guid userId, string monthYear)
         {
             throw new NotImplementedException();
         }
 
-        public Task<MonthlyIncomeAfterTax> GetMonthlyIncomeAfterTaxByUserIdAndByYearAsync(Guid userId, int year)
+        public Task<MonthlyIncomeAfterTax> GetYearlyIncomeAfterTaxByUserIdAsync(Guid userId, int year)
         {
             throw new NotImplementedException();
         }

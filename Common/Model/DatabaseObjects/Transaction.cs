@@ -16,6 +16,7 @@ namespace Common.Model.DatabaseObjects
         public decimal Amount { get; set; }
         public bool ToVerify { get; set; }
         public ModeOfPayment ModeOfPayment { get; set; }
+        public string FinancialMonth { get; set; }
 
 
 
@@ -24,7 +25,6 @@ namespace Common.Model.DatabaseObjects
         public int CategoryId { get; set; }
         public int SubcategoryId { get; set; }
         public Guid UserId { get; set; }
-        public Guid FinancialMonthId { get; set; }
 
         // Navigation property: Each transaction has one category
         public Category Category { get; set; }
@@ -33,7 +33,5 @@ namespace Common.Model.DatabaseObjects
         public Subcategory Subcategory { get; set; }
         // Navigation property: Each transaction has one user
         public User User { get; set; }
-        //Navigation property: each transaction has one FinancialMonth
-        public FinancialMonth FinancialMonth { get; set; }
     }
 }

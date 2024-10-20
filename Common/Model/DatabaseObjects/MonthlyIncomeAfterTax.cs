@@ -4,13 +4,12 @@
     {
         public Guid Id { get; set; }
         public decimal IncomeAfterTax { get; set; }
+        public string FinancialMonth { get; set; }
 
         // FK
         public Guid UserId { get; set; }
-        public Guid FinancialMonthId { get; set; }
 
         // NavigationProperty
         public User User { get; set; }
-        public FinancialMonth FinancialMonth { get; set; }
     }
 }
