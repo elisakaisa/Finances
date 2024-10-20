@@ -6,10 +6,15 @@ namespace Common.Services
 {
     public class TransactionService : ITransactionService
     {
-        private ITransactionRepository _transactionRepository;
-        public TransactionService(ITransactionRepository transactionRepository) 
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly ISubcategoryRepository _subcategoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
+
+        public TransactionService(ITransactionRepository transactionRepository, ICategoryRepository categoryRepo, ISubcategoryRepository subcategoryRepo) 
         { 
             _transactionRepository = transactionRepository;
+            _categoryRepository = categoryRepo;
+            _subcategoryRepository = subcategoryRepo;
         }
 
         public Task<Transaction> CreateAsync(Transaction transaction)

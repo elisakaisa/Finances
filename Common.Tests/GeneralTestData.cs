@@ -76,7 +76,7 @@ namespace Common.Tests
             State = State.Active
         };
 
-        public Category Income = new()
+        public static Category Income = new()
         {
             Id = 1,
             Name = "Income",
