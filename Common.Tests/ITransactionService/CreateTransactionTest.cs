@@ -61,7 +61,7 @@ namespace Common.Tests.ITransactionService
         [TestCase("202400")]
         [TestCase("202413")]
         [TestCase("2024-11")]
-        public async Task CreateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
+        public void CreateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
         {
             // Arrange
             var newTransaction = new Transaction
@@ -83,6 +83,48 @@ namespace Common.Tests.ITransactionService
 
             // Assert
             Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction));
+        }
+
+        [Test]
+        // TODO: add test cases?
+        public void CreateTransaction_ThrowsError_IfSubcategoryIsNotContainedInCategory()
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Individual,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.Electricity.Id,
+                UserId = GeneralTestData.User1Hh1Id
+            };
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction));
+        }
+
+        [Test]
+        public void CreateTransaction_ThrowsError_IfDataIsMissing()
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+            };
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
         }
     }
 }

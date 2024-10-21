@@ -19,6 +19,7 @@ namespace Common.Services
 
         public Task<Transaction> CreateAsync(Transaction transaction)
         {
+            // start with validation passed data
             throw new NotImplementedException();
         }
 
