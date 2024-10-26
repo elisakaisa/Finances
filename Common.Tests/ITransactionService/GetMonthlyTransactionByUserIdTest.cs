@@ -1,5 +1,6 @@
 using Common.Repositories.Interfaces;
 using Common.Services;
+using Common.Utils.Exceptions;
 using Moq;
 
 namespace Common.Tests.ITransactionService
@@ -21,20 +22,54 @@ namespace Common.Tests.ITransactionService
         }
 
         [Test]
-        public async Task GetMonthlyTransactionByUserId_ReturnsMonthlyTransactions()
+        public async Task GetMonthlyTransactionByUserId_ReturnsMonthlyTransactions_IfUserIsPartOfHousehold()
         {
             // Arrange
-            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), "2024-12"))
+            var financialMonth = "202412";
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .ReturnsAsync(GeneralTestData.TestTransactions);
+            _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
 
             //Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, GeneralTestData.User11);
+            var result = await sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User11);
 
 
             //Assert
             Assert.That(result, Is.Not.Null);
-            Assert.Equals(GeneralTestData.TestTransactions.Count, result.Count);
+            Assert.That(GeneralTestData.TestTransactions, Has.Count.EqualTo(result.Count));
+        }
+
+        [Test]
+        public void GetMonthlyTransactionByUserId_ThrowsError_IfUserNotPartOfHousehold()
+        {
+            // Arrange
+            var financialMonth = "2024-12";
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .ReturnsAsync(GeneralTestData.TestTransactions);
+            _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
+
+            //Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            //Assert
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User21));
+        }
+
+        [Test]
+        public void GetMonthlyTransactionByUserId_ThrowsError_IfFinancialMonthOfWrongFormat()
+        {
+            // Arrange
+            var financialMonth = "2024012";
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
+                .ReturnsAsync(GeneralTestData.TestTransactions);
+            _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
+
+            //Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            //Assert
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User11));
         }
     }
 }

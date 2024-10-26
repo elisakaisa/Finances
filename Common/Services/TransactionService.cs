@@ -3,7 +3,7 @@ using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
-using System.Globalization;
+using Common.Utils.Extensions;
 
 namespace Common.Services
 {
@@ -35,31 +35,38 @@ namespace Common.Services
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, User user)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, User user)
         {
             ValidateThatUserIsInHousehold(user, householdId);
+            ValidateFinancialMonth(financialMonth);
 
-            throw new NotImplementedException();
+            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
+            return transactions;
         }
 
-        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, User user)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, User user)
         {
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
             ValidateThatUserIsInHousehold(user, userToGetTransactionsFrom.HouseholdId);
-            throw new NotImplementedException();
+            ValidateFinancialMonth(financialMonth);
+
+            var transactions = await _transactionRepository.GetMonthlyTransactionsByUserIdAsync(userId, financialMonth);
+            return transactions;
         }
 
-        public Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, User user)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, User user)
         {
             ValidateThatUserIsInHousehold(user, householdId);
-            throw new NotImplementedException();
+            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
+            return transactions;
         }
 
-        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, User user)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, int year, User user)
         {
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
             ValidateThatUserIsInHousehold(user, userToGetTransactionsFrom.HouseholdId);
-            throw new NotImplementedException();
+            var transactions = await _transactionRepository.GetYearlyTransactionsByUserIdAsync(userId, year);
+            return transactions;
         }
 
         public async Task<Transaction> UpdateAsync(Transaction transaction)
@@ -79,7 +86,7 @@ namespace Common.Services
                 throw new MissingOrWrongTransactionDataException();
             }
 
-            if (!IsFinancialMonthOfCorrectFormat(transaction.FinancialMonth))
+            if (!transaction.FinancialMonth.IsFinancialMonthOfCorrectFormat())
             {
                 throw new FinancialMonthOfWrongFormatException();
             }
@@ -88,6 +95,15 @@ namespace Common.Services
             if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
             {
                 throw new SubcategoryNotContainedInCategoryException();
+            }
+        }
+
+
+        private static void ValidateFinancialMonth(string financialMonth)
+        {
+            if (!financialMonth.IsFinancialMonthOfCorrectFormat())
+            {
+                throw new FinancialMonthOfWrongFormatException();
             }
         }
 
@@ -107,16 +123,6 @@ namespace Common.Services
         private static bool IsSubcategoryInCategory(ICollection<Subcategory> subcategoriesInCategory, int subcategoryId)
         {
             return subcategoriesInCategory.Any(sc => sc.Id == subcategoryId);
-        }
-
-        private static bool IsFinancialMonthOfCorrectFormat(string financialMonth)
-        {
-            return DateTime.TryParseExact(
-            financialMonth,
-            "yyyyMM",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out _);
         }
     }
 }
