@@ -7,7 +7,7 @@ using Moq;
 
 namespace Common.Tests.ITransactionService
 {
-    public class CreateTransactionTest
+    public class UpdateTransactionTests
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<IMonthlyIncomeAfterTaxRepository> _monthlyIncomeAfterTaxRepo;
@@ -28,10 +28,23 @@ namespace Common.Tests.ITransactionService
         }
 
         [Test]
-        public async Task CreateTransaction_IsSuccessful_IfContainsAllMandatoryFieldsAndDefaultValuesForNonMandatory()
+        public async Task UpdateTransaction_IsSuccessful_IfContainsAllMandatoryFieldsAndDefaultValuesForNonMandatory()
         {
             // Arrange
-            var newTransaction = new Transaction
+            var oldTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Even,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id
+            };
+            var updatedTransaction = new Transaction
             {
                 Id = GeneralTestData.User1Hh1Id,
                 Description = "uukhash",
@@ -46,33 +59,39 @@ namespace Common.Tests.ITransactionService
             };
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
-            _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
-                .ReturnsAsync(newTransaction);
+            _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
+                .ReturnsAsync(updatedTransaction);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.CreateAsync(newTransaction);
+            var result = await sut.UpdateAsync(oldTransaction);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
-            {
-                // default values
-                Assert.That(result.ExcludeFromSummary, Is.False);
-                Assert.That(result.UserShare, Is.Null);
-                Assert.That(result.ToVerify, Is.False);
-                Assert.That(result.ModeOfPayment, Is.EqualTo(ModeOfPayment.NA));
-            });
+            Assert.That(result.SplitType, Is.Not.EqualTo(oldTransaction.SplitType));
         }
 
         [TestCase("")]
         [TestCase("202400")]
         [TestCase("202413")]
         [TestCase("2024-11")]
-        public void CreateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
+        public void UpdateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
         {
             // Arrange
-            var newTransaction = new Transaction
+            var oldTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Individual,
+                Amount = 123m,
+                FinancialMonth = financialMonth,
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id
+            };
+            var updatedTransaction = new Transaction
             {
                 Id = GeneralTestData.User1Hh1Id,
                 Description = "uukhash",
@@ -86,81 +105,14 @@ namespace Common.Tests.ITransactionService
                 UserId = GeneralTestData.User1Hh1Id
             };
 
-            // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-
-            // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction));
-        }
-
-        [Test]
-        // TODO: add test cases?
-        public void CreateTransaction_ThrowsError_IfSubcategoryIsNotContainedInCategory()
-        {
-            // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.Electricity.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                Category = GeneralTestData.Income,
-                Subcategory = GeneralTestData.Electricity
-            };
-
-            // Act
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>())).ReturnsAsync(GeneralTestData.Income.Subcategories);
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-
-            // Assert
-            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction));
-        }
-
-        [Test]
-        public void CreateTransaction_ThrowsError_IfDataIsMissing()
-        {
-            // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-            };
+            _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
+                .ReturnsAsync(updatedTransaction);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
-        }
-
-        [Test]
-        public void CreateTransaction_ThrowsError_IfUserShareIsNullForCustomSplitType()
-        {
-            // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Custom,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
-            };
-
-            // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-
-            // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(oldTransaction));
         }
     }
 }

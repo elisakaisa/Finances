@@ -3,6 +3,7 @@ using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
+using System.Globalization;
 
 namespace Common.Services
 {
@@ -23,19 +24,10 @@ namespace Common.Services
 
         public async Task<Transaction> CreateAsync(Transaction transaction)
         {
-            if (!MandatoryFieldsAreFilled(transaction))
-            {
-                throw new MissingOrWrongTransactionDataException();
-            }
+            await ValidateTransactionData(transaction);
 
-
-            var subcategoriesInCategory = await _categoryRepository.GetCategorysSubcategories(transaction.CategoryId);
-            if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
-            {
-                throw new SubcategoryNotContainedInCategoryException();
-            }
-
-            throw new NotImplementedException();
+            var createdTransaction = await _transactionRepository.CreateAsync(transaction);
+            return createdTransaction;
         }
 
         public Task<bool> DeleteAsync(Transaction transaction)
@@ -70,29 +62,61 @@ namespace Common.Services
             throw new NotImplementedException();
         }
 
-        public Task<Transaction> UpdateAsync(Transaction transaction)
+        public async Task<Transaction> UpdateAsync(Transaction transaction)
         {
-            throw new NotImplementedException();
+            await ValidateTransactionData(transaction);
+
+            var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
+            return updatedTransaction;
         }
 
-        private bool MandatoryFieldsAreFilled(Transaction transaction)
+
+
+        private async Task ValidateTransactionData(Transaction transaction)
         {
-            if (transaction.Id == Guid.Empty) return false;
-            if (transaction.Description == string.Empty) return false;
-            if (transaction.Amount == 0) return false;
-            if (transaction.CategoryId == 0) return false;
-            if (transaction.SubcategoryId == 0) return false;
-            if (transaction.UserId == Guid.Empty) return false;
-            if (transaction.FinancialMonth == string.Empty) return false;
+            if (!MandatoryFieldsAreFilled(transaction))
+            {
+                throw new MissingOrWrongTransactionDataException();
+            }
+
+            if (!IsFinancialMonthOfCorrectFormat(transaction.FinancialMonth))
+            {
+                throw new FinancialMonthOfWrongFormatException();
+            }
+
+            var subcategoriesInCategory = await _categoryRepository.GetCategorysSubcategories(transaction.CategoryId);
+            if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
+            {
+                throw new SubcategoryNotContainedInCategoryException();
+            }
+        }
+
+        private static bool MandatoryFieldsAreFilled(Transaction transaction)
+        {
+            if (transaction.Id == Guid.Empty
+                || transaction.Description == string.Empty
+                || transaction.Amount == 0
+                || transaction.CategoryId == 0
+                || transaction.SubcategoryId == 0
+                || transaction.UserId == Guid.Empty) return false;
             if (transaction.SplitType == SplitType.Custom && transaction.UserShare == null) return false;
             return true;
         }
 
         // TODO: should this be an extension method? Or in category object?
-        private bool IsSubcategoryInCategory(ICollection<Subcategory> subcategoriesInCategory, int subcategoryId)
+        private static bool IsSubcategoryInCategory(ICollection<Subcategory> subcategoriesInCategory, int subcategoryId)
         {
-            var isIncludedInCategory = subcategoriesInCategory.Select(sc => sc.Id ==  subcategoryId).ToList().FirstOrDefault();
-            return isIncludedInCategory;
+            return subcategoriesInCategory.Any(sc => sc.Id == subcategoryId);
+        }
+
+        private static bool IsFinancialMonthOfCorrectFormat(string financialMonth)
+        {
+            return DateTime.TryParseExact(
+            financialMonth,
+            "yyyyMM",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out _);
         }
     }
 }
