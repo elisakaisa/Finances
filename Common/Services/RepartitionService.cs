@@ -136,6 +136,8 @@ namespace Common.Services
 
             var commonExpensesPaidByUser = users.ToDictionary(user => user.Key, user => 0m);
             var userShouldPay = users.ToDictionary(user => user.Key, user => 0m);
+            var targetShare = users.ToDictionary(user => user.Key, user => 0m);
+            var actualShare = users.ToDictionary(user => user.Key, user => 0m);
 
             Repartition repartition = new()
             {
@@ -147,10 +149,12 @@ namespace Common.Services
                 TotalCommonExpenses = Math.Round(0m, 3),
                 TotalCommonExpensesPaidByUser = commonExpensesPaidByUser,
                 UserShouldPay = userShouldPay,
-                // TODO:target shares
+                TargetUserShare = targetShare,
+                ActualUserShare = actualShare
             };
 
             ProcessMonthlyTransactions(householdTransactions, repartition, user1.Id, user2.Id);
+            CalculateUserShares(repartition, user1.Id, user2.Id);
 
             return RoundRepartitionSums(repartition);
         }
@@ -194,6 +198,15 @@ namespace Common.Services
             }
         }
 
+        private static void CalculateUserShares(Repartition repartition, Guid user1, Guid user2)
+        {
+            var totalCommon = repartition.TotalCommonExpenses;
+            repartition.TargetUserShare[user1] = totalCommon == 0 ? 0m : repartition.UserShouldPay[user1] / totalCommon;
+            repartition.TargetUserShare[user2] = totalCommon == 0 ? 0m : repartition.UserShouldPay[user2] / totalCommon;
+            repartition.ActualUserShare[user1] = totalCommon == 0 ? 0m : repartition.TotalCommonExpensesPaidByUser[user1] / totalCommon;
+            repartition.ActualUserShare[user2] = totalCommon == 0 ? 0m : repartition.TotalCommonExpensesPaidByUser[user2] / totalCommon;
+        }
+
         private static Repartition RoundRepartitionSums(Repartition repartition)
         {
             foreach (var userId in repartition.Users.Keys.ToList())
@@ -221,7 +234,6 @@ namespace Common.Services
 
         private static List<string> InitializeFinancialMonths(int year)
         {
-            // TODO: this can be easily updated to show past 12 months instead of current year
             var financialMonths = new List<string>();
 
             for (int i = 1; i <= 12; i++)

@@ -20,7 +20,6 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        // TODO: is it really needed?
         Task<ICollection<Subcategory>> ISubcategoryRepository.GetAllAsync()
         {
             throw new NotImplementedException();

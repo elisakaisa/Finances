@@ -113,17 +113,17 @@ namespace Common.Tests.IRepartitionService
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-                //Assert.That(result.TargetShareUser1, Is.EqualTo(0.5m)); //TODO: to be implemented
-                //Assert.That(result.TargetShareUser2, Is.EqualTo(0.5m));
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0.5m)); //TODO: to be implemented
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0.5m));
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
             });
         }
 
-        [TestCase(1, 2, 3, 4)]
-        [TestCase(0, 0, 0, 0)] // TODO: fix this case. Is it even needed?
+        [TestCase(1, 2, 3, 4, 0.5, 0.5)]
+        [TestCase(0, 0, 0, 0, 0, 0)]
         public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartition_IfHouseholdHas2UsersWithEqualIncomeAndAllTransactionSplitIncomeBased
-            (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1)
+            (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1, decimal actualShareUser1, decimal actualShareUser2)
         {
             // Arrange
             var testTransactions = GetTransactionsWithOnlyIncomeBasedSplits(expense1U1, expense2U1, expense1U2, payback1U1);
@@ -147,11 +147,11 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(actualShareUser1));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(actualShareUser2));
             });
-            //Assert.That(result.ActualShareUser1, Is.EqualTo(0.5m));
-            //Assert.That(result.ActualShareUser2, Is.EqualTo(0.5m));
-            //Assert.That(result.TargetShareUser1, Is.EqualTo(0.5m));
-            //Assert.That(result.TargetShareUser2, Is.EqualTo(0.5m));
+            //Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0.5m));
+            //Assert.That(result.AtualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0.5m));
         }
 
 
@@ -202,6 +202,10 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
                 Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShareOfTransaction));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(1 - user1ShareOfTransaction));
+                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
+                Assert.That(result.ActualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
             });
         }
 
@@ -279,6 +283,13 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
                 Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+                var householdIncome = income1 + income2;
+                var incomeU1 = householdIncome == 0 ? 0.5m : income1 / householdIncome;
+                var incomeU2 = householdIncome == 0 ? 0.5m : income2 / householdIncome;
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeU1));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeU2));
+                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
+                Assert.That(result.ActualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
             });
         }
 
