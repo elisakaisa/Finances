@@ -1,6 +1,8 @@
 ﻿using Common.Model.DatabaseObjects;
+using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
+using Common.Utils.Exceptions;
 
 namespace Common.Services
 {
@@ -19,9 +21,20 @@ namespace Common.Services
             _userRepository = userRepo;
         }
 
-        public Task<Transaction> CreateAsync(Transaction transaction)
+        public async Task<Transaction> CreateAsync(Transaction transaction)
         {
-            // start with validation passed data
+            if (!MandatoryFieldsAreFilled(transaction))
+            {
+                throw new MissingOrWrongTransactionDataException();
+            }
+
+
+            var subcategoriesInCategory = await _categoryRepository.GetCategorysSubcategories(transaction.CategoryId);
+            if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
+            {
+                throw new SubcategoryNotContainedInCategoryException();
+            }
+
             throw new NotImplementedException();
         }
 
@@ -60,6 +73,26 @@ namespace Common.Services
         public Task<Transaction> UpdateAsync(Transaction transaction)
         {
             throw new NotImplementedException();
+        }
+
+        private bool MandatoryFieldsAreFilled(Transaction transaction)
+        {
+            if (transaction.Id == Guid.Empty) return false;
+            if (transaction.Description == string.Empty) return false;
+            if (transaction.Amount == 0) return false;
+            if (transaction.CategoryId == 0) return false;
+            if (transaction.SubcategoryId == 0) return false;
+            if (transaction.UserId == Guid.Empty) return false;
+            if (transaction.FinancialMonth == string.Empty) return false;
+            if (transaction.SplitType == SplitType.Custom && transaction.UserShare == null) return false;
+            return true;
+        }
+
+        // TODO: should this be an extension method? Or in category object?
+        private bool IsSubcategoryInCategory(ICollection<Subcategory> subcategoriesInCategory, int subcategoryId)
+        {
+            var isIncludedInCategory = subcategoriesInCategory.Select(sc => sc.Id ==  subcategoryId).ToList().FirstOrDefault();
+            return isIncludedInCategory;
         }
     }
 }

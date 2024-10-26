@@ -4,7 +4,6 @@ using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Utils.Exceptions;
 using Moq;
-using System.Runtime.Intrinsics.Arm;
 
 namespace Common.Tests.ITransactionService
 {
@@ -106,10 +105,13 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.Electricity.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                Category = GeneralTestData.Income,
+                Subcategory = GeneralTestData.Electricity
             };
 
             // Act
+            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>())).ReturnsAsync(GeneralTestData.Income.Subcategories);
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
@@ -123,6 +125,31 @@ namespace Common.Tests.ITransactionService
             var newTransaction = new Transaction
             {
                 Id = GeneralTestData.User1Hh1Id,
+            };
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+        }
+
+        [Test]
+        public void CreateTransaction_ThrowsError_IfUserShareIsNullForCustomSplitType()
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Custom,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id
             };
 
             // Act
