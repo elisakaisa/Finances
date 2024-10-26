@@ -23,6 +23,24 @@ namespace Common.Tests.IRepartitionService
         }
 
         [Test]
+        public Task GetMonthlyHouseholdRepartition_ThrowsError_IfUserIsNotInHousehold()
+        {
+            // Arrange
+            var testTransactions = GetTransactionsForSingleHousehold();
+
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))
+                .ReturnsAsync(testTransactions);
+            _householdRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith3Users());
+
+            // Act
+            var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User21));
+            return Task.CompletedTask;
+        }
+
+        [Test]
         public Task GetMonthlyHouseholdRepartition_ThrowsError_IfHouseholdHasThreeUser()
         {
             // Arrange
@@ -36,7 +54,7 @@ namespace Common.Tests.IRepartitionService
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<HouseholdWithMoreThanTwoUsersNotSupportedException>(() => sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12"));
+            Assert.ThrowsAsync<HouseholdWithMoreThanTwoUsersNotSupportedException>(() => sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11));
             return Task.CompletedTask;
         }
 
@@ -53,17 +71,20 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumHouseholdTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id)));
             Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumUserTransactionsByType(TransactionType.Expenses, testUserId)));
             Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(0));
-            Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
-            Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0));
-            Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(1));
-            Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
+                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(1));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
+            });
         }
 
 
@@ -83,15 +104,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            //Assert.That(result.TargetShareUser1, Is.EqualTo(0.5m)); //TODO: to be implemented
-            //Assert.That(result.TargetShareUser2, Is.EqualTo(0.5m));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                //Assert.That(result.TargetShareUser1, Is.EqualTo(0.5m)); //TODO: to be implemented
+                //Assert.That(result.TargetShareUser2, Is.EqualTo(0.5m));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+            });
         }
 
         [TestCase(1, 2, 3, 4)]
@@ -111,13 +135,16 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+            });
             //Assert.That(result.ActualShareUser1, Is.EqualTo(0.5m));
             //Assert.That(result.ActualShareUser2, Is.EqualTo(0.5m));
             //Assert.That(result.TargetShareUser1, Is.EqualTo(0.5m));
@@ -160,15 +187,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
-            Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
-            Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
         }
 
 
@@ -198,15 +228,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
-            Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
-            Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
         }
 
 
@@ -229,15 +262,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
-            Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
-            Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
         }
 
 
@@ -261,15 +297,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
-            Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
-            Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
         }
 
 
@@ -295,15 +334,18 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12");
+            var result = await sut.GetMonthlyHouseholdRepartition(GeneralTestData.Household1Id, "2024-12", GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
-            Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
-            Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
+                Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
         }
     }
 }

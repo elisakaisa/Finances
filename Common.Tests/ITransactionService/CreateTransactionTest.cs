@@ -50,11 +50,14 @@ namespace Common.Tests.ITransactionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            // default values
-            Assert.That(result.ExcludeFromSummary, Is.False);
-            Assert.That(result.UserShare, Is.Null);
-            Assert.That(result.ToVerify, Is.False);
-            Assert.That(result.ModeOfPayment, Is.EqualTo(ModeOfPayment.NA));
+            Assert.Multiple(() =>
+            {
+                // default values
+                Assert.That(result.ExcludeFromSummary, Is.False);
+                Assert.That(result.UserShare, Is.Null);
+                Assert.That(result.ToVerify, Is.False);
+                Assert.That(result.ModeOfPayment, Is.EqualTo(ModeOfPayment.NA));
+            });
         }
 
         [TestCase("")]

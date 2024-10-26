@@ -23,8 +23,13 @@ namespace Common.Services
             _householdRepository = householdRepo;
         }
 
-        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear)
+        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, User user)
         {
+            if (user.HouseholdId != householdId) 
+            {
+                throw new UserNotInHouseholdException();
+            }
+
             var household = await _householdRepository.GetByIdAsync(householdId);
             if (household.Users.Count > 2) 
             {
@@ -42,8 +47,13 @@ namespace Common.Services
             return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, monthYear);
         }
 
-        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year)
+        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, User user)
         {
+            if (user.HouseholdId != householdId)
+            {
+                throw new UserNotInHouseholdException();
+            }
+
             var household = await _householdRepository.GetByIdAsync(householdId);
             if (household.Users.Count > 2)
             {

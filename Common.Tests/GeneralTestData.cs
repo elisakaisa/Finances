@@ -45,14 +45,14 @@ namespace Common.Tests
 
 
         // Users in household 2
-        public User User21 = new()
+        public static User User21 = new()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000021"),
             Name = "User21",
             HouseholdId = Household2Id
         };
 
-        public User User22 = new()
+        public static User User22 = new()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000022"),
             Name = "User22",
