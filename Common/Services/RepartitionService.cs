@@ -8,7 +8,7 @@ using Common.Utils.Extensions;
 
 namespace Common.Services
 {
-    public class RepartitionService : IRepartitionService
+    public class RepartitionService : BaseService, IRepartitionService
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly IMonthlyIncomeAfterTaxRepository _monthlyIncomeAfterTaxRepository;
@@ -25,10 +25,7 @@ namespace Common.Services
 
         public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, User user)
         {
-            if (user.HouseholdId != householdId) 
-            {
-                throw new UserNotInHouseholdException();
-            }
+            ValidateThatUserIsInHousehold(user, householdId);
 
             var household = await _householdRepository.GetByIdAsync(householdId);
             if (household.Users.Count > 2) 
@@ -49,10 +46,7 @@ namespace Common.Services
 
         public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, User user)
         {
-            if (user.HouseholdId != householdId)
-            {
-                throw new UserNotInHouseholdException();
-            }
+            ValidateThatUserIsInHousehold(user, householdId);
 
             var household = await _householdRepository.GetByIdAsync(householdId);
             if (household.Users.Count > 2)

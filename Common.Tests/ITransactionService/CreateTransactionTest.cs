@@ -15,6 +15,7 @@ namespace Common.Tests.ITransactionService
         private Mock<IHouseholdRepository> _householdRepository;
         private Mock<ICategoryRepository> _categoryRepository;
         private Mock<ISubcategoryRepository> _subcategoryRepository;
+        private Mock<IUserRepository> _userRepository;
 
         [SetUp]
         public void Setup()
@@ -24,6 +25,7 @@ namespace Common.Tests.ITransactionService
             _householdRepository = new Mock<IHouseholdRepository>();
             _categoryRepository = new Mock<ICategoryRepository>();
             _subcategoryRepository = new Mock<ISubcategoryRepository>();
+            _userRepository = new Mock<IUserRepository>();
         }
 
         [Test]
@@ -45,7 +47,7 @@ namespace Common.Tests.ITransactionService
             };
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
             var result = await sut.CreateAsync(newTransaction);
 
             // Assert
@@ -82,7 +84,7 @@ namespace Common.Tests.ITransactionService
             };
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
             Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction));
@@ -108,7 +110,7 @@ namespace Common.Tests.ITransactionService
             };
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
             Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction));
@@ -124,7 +126,7 @@ namespace Common.Tests.ITransactionService
             };
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
             Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
