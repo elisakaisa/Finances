@@ -5,6 +5,7 @@ using Common.Tests.IRepartitionService.TestData;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 using Moq;
+using System.Collections.Generic;
 
 namespace Common.Tests.IRepartitionService
 {
@@ -64,10 +65,13 @@ namespace Common.Tests.IRepartitionService
             // Arrange
             var testTransactions = GetTransactionsForSingleHousehold();
             var testUserId = Guid.NewGuid();
+            var montlyIncomeAfterTaxUser = GetMonthlyIncomesAfterTaxForOneUserHousehold(1m);
 
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))
                 .ReturnsAsync(testTransactions);
             _householdRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith1User());
+            _monthlyIncomeAfterTaxRepo.Setup(r => r.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))
+                .ReturnsAsync(montlyIncomeAfterTaxUser);
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
@@ -75,15 +79,12 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumHouseholdTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumUserTransactionsByType(TransactionType.Expenses, testUserId)));
-            Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(0));
+            Assert.That(result.Users, Has.Count.EqualTo(1));
             Assert.Multiple(() =>
             {
+                Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User1Hh1Id], Is.EqualTo(testTransactions.SumHouseholdTransactionsByType(TransactionType.Expenses, GeneralTestData.Household1Id)));
                 Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
-                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0));
-                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(1));
-                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
             });
         }
 
@@ -108,6 +109,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -139,6 +141,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -191,6 +194,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -232,6 +236,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -266,6 +271,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -301,6 +307,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));
@@ -338,6 +345,7 @@ namespace Common.Tests.IRepartitionService
 
             // Assert
             Assert.That(result, Is.Not.Null);
+            Assert.That(result.Users, Has.Count.EqualTo(2));
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(GeneralTestData.Household1Id)));

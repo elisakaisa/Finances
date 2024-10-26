@@ -43,30 +43,35 @@ namespace Common.Tests.IRepartitionService.TestData
                 {
                     Amount = 123.45m,
                     TransactionType = TransactionType.Expenses,
+                    UserId = GeneralTestData.User1Hh1Id,
                     User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 13.12m,
                     TransactionType = TransactionType.Expenses,
+                    UserId = GeneralTestData.User1Hh1Id,
                     User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 102m,
                     TransactionType = TransactionType.Savings,
+                    UserId = GeneralTestData.User1Hh1Id,
                     User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = -50.2m,
                     TransactionType = TransactionType.Expenses,
+                    UserId = GeneralTestData.User1Hh1Id,
                     User = GeneralTestData.User11,
                 },
                 new()
                 {
                     Amount = 10000m,
                     TransactionType = TransactionType.Income,
+                    UserId = GeneralTestData.User1Hh1Id,
                     User = GeneralTestData.User11,
                 }
 
@@ -320,6 +325,19 @@ namespace Common.Tests.IRepartitionService.TestData
                     UserId = GeneralTestData.User2Hh1Id,
                     User = GeneralTestData.User12,
                 }
+            ];
+        }
+
+        public List<MonthlyIncomeAfterTax> GetMonthlyIncomesAfterTaxForOneUserHousehold(decimal income1)
+        {
+            return
+            [
+                new ()
+                {
+                    IncomeAfterTax = income1,
+                    UserId = GeneralTestData.User1Hh1Id,
+                    User = GeneralTestData.User11,
+                },
             ];
         }
     }
