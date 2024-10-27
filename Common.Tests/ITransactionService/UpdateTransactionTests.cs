@@ -42,7 +42,8 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
             var updatedTransaction = new Transaction
             {
@@ -55,7 +56,8 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
@@ -64,7 +66,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.UpdateAsync(oldTransaction);
+            var result = await sut.UpdateAsync(oldTransaction, GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -89,7 +91,8 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = financialMonth,
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
             var updatedTransaction = new Transaction
             {
@@ -102,7 +105,8 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = financialMonth,
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
 
             _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
@@ -112,7 +116,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(oldTransaction));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(oldTransaction, GeneralTestData.User11));
         }
     }
 }

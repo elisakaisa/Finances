@@ -42,7 +42,8 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
@@ -51,7 +52,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.CreateAsync(newTransaction);
+            var result = await sut.CreateAsync(newTransaction, GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -64,6 +65,69 @@ namespace Common.Tests.ITransactionService
                 Assert.That(result.ModeOfPayment, Is.EqualTo(ModeOfPayment.NA));
             });
         }
+
+        [Test]
+        public async Task CreateTransaction_IsSuccessful_IisCreatedByUserInHousehold()
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Individual,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
+            };
+            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+                .ReturnsAsync(GeneralTestData.Income.Subcategories);
+            _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
+                .ReturnsAsync(newTransaction);
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+            var result = await sut.CreateAsync(newTransaction, GeneralTestData.User12);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.UserId, Is.EqualTo(GeneralTestData.User1Hh1Id));
+        }
+
+        [Test]
+        public void CreateTransaction_ThrowsError_IfIsCreatedByUserNotInHousehold()
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Individual,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
+            };
+            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+                .ReturnsAsync(GeneralTestData.Income.Subcategories);
+            _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
+                .ReturnsAsync(newTransaction);
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User22));
+        }
+
 
         [TestCase("")]
         [TestCase("202400")]
@@ -83,14 +147,15 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = financialMonth,
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
         }
 
         [Test]
@@ -111,7 +176,8 @@ namespace Common.Tests.ITransactionService
                 SubcategoryId = GeneralTestData.Electricity.Id,
                 UserId = GeneralTestData.User1Hh1Id,
                 Category = GeneralTestData.Income,
-                Subcategory = GeneralTestData.Electricity
+                Subcategory = GeneralTestData.Electricity,
+                User = GeneralTestData.User11
             };
 
             // Act
@@ -119,7 +185,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
         }
 
         [Test]
@@ -129,13 +195,14 @@ namespace Common.Tests.ITransactionService
             var newTransaction = new Transaction
             {
                 Id = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
         }
 
         [Test]
@@ -153,14 +220,15 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
         }
 
         [TestCase(-0.2)]
@@ -180,14 +248,15 @@ namespace Common.Tests.ITransactionService
                 FinancialMonth = "202412",
                 CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id
+                UserId = GeneralTestData.User1Hh1Id,
+                User = GeneralTestData.User11
             };
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
         }
     }
 }

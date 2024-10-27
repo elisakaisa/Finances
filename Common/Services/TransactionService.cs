@@ -22,17 +22,31 @@ namespace Common.Services
             _userRepository = userRepo;
         }
 
-        public async Task<Transaction> CreateAsync(Transaction transaction)
+        /// <summary>
+        /// Creates a trasaction
+        /// </summary>
+        /// <param name="transaction">The values of the new transaction</param>
+        /// <param name="user">The user creating the transaction</param>
+        /// <returns>The created transaction</returns>
+        public async Task<Transaction> CreateAsync(Transaction transaction, User user)
         {
+            ValidateThatUserIsInHousehold(transaction, user);
             await ValidateTransactionData(transaction);
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
             return createdTransaction;
         }
 
-        public Task<bool> DeleteAsync(Transaction transaction)
+        /// <summary>
+        /// Deletes a transaction
+        /// </summary>
+        /// <param name="transaction">The transaction to be deleted</param>
+        /// <param name="user">The user deleting the transaction</param>
+        /// <returns>True/False if the transaction has been deleted</returns>
+        public async Task<bool> DeleteAsync(Transaction transaction, User user)
         {
-            throw new NotImplementedException();
+            ValidateThatUserIsInHousehold(transaction, user);
+            return await _transactionRepository.DeleteAsync(transaction);
         }
 
         public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, User user)
@@ -69,8 +83,9 @@ namespace Common.Services
             return transactions;
         }
 
-        public async Task<Transaction> UpdateAsync(Transaction transaction)
+        public async Task<Transaction> UpdateAsync(Transaction transaction, User user)
         {
+            ValidateThatUserIsInHousehold(transaction, user);
             await ValidateTransactionData(transaction);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
