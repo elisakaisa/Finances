@@ -1,13 +1,25 @@
-﻿using Common.Model.DatabaseObjects;
+﻿using Common.Database;
+using Common.Model.DatabaseObjects;
 using Common.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
     public class TransactionRepository : ITransactionRepository
     {
-        public Task<Transaction> CreateAsync(Transaction entity)
+        public readonly FinancesDbContext _dbContext;
+
+        public TransactionRepository(FinancesDbContext context)
         {
-            throw new NotImplementedException();
+            _dbContext = context;
+        }
+
+        public async Task<Transaction> CreateAsync(Transaction entity)
+        {
+            await _dbContext.Transactions.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            //TODO: double check how this is done
+            return entity;
         }
 
         public Task<ICollection<Transaction>> CreateMultipleAsync(ICollection<Transaction> transactionList)
@@ -15,39 +27,79 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<bool> DeleteAsync(Transaction entity)
+        public async Task<bool> DeleteAsync(Transaction entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Transactions.Remove(entity);
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
 
-        public Task<Transaction> GetByIdAsync(Guid id)
+        public async Task<Transaction> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var transaction = await _dbContext.Transactions
+                .Include(t => t.User)
+                .Include(t => t.Category)
+                .Include(t => t.Subcategory)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            return transaction ?? throw new KeyNotFoundException($"Transaction with ID {id} was not found.");
         }
 
-        public Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdIdAsync(Guid householdId, string monthYear)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdIdAsync(Guid householdId, string monthYear)
         {
-            throw new NotImplementedException();
+            var monthlyTransactions = await _dbContext.Transactions
+                .Include(t => t.User)
+                .Include(t => t.Category)
+                .Include(t => t.Subcategory)
+                .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth == monthYear)
+                .ToListAsync();
+
+            return monthlyTransactions;
         }
 
-        public Task<ICollection<Transaction>> GetMonthlyTransactionsByUserIdAsync(Guid userId, string monthYear)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserIdAsync(Guid userId, string monthYear)
         {
-            throw new NotImplementedException();
+            var monthlyTransactions = await _dbContext.Transactions
+                .Include(t => t.User)
+                .Include(t => t.Category)
+                .Include(t => t.Subcategory)
+                .Where(t => t.User.Id == userId && t.FinancialMonth == monthYear)
+                .ToListAsync();
+
+            return monthlyTransactions;
         }
 
-        public Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdIdAsync(Guid householdId, int year)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdIdAsync(Guid householdId, int year)
         {
-            throw new NotImplementedException();
+            var yearS = year.ToString();
+            var yearlyTransactions = await _dbContext.Transactions
+                .Include(t => t.User)
+                .Include(t => t.Category)
+                .Include(t => t.Subcategory)
+                .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth.StartsWith(yearS))
+                .ToListAsync();
+
+            return yearlyTransactions;
         }
 
-        public Task<ICollection<Transaction>> GetYearlyTransactionsByUserIdAsync(Guid userId, int year)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserIdAsync(Guid userId, int year)
         {
-            throw new NotImplementedException();
+            var yearS = year.ToString();
+            var yearlyTransactions = await _dbContext.Transactions
+                .Include(t => t.User)
+                .Include(t => t.Category)
+                .Include(t => t.Subcategory)
+                .Where(t => t.User.Id == userId && t.FinancialMonth.StartsWith(yearS))
+                .ToListAsync();
+
+            return yearlyTransactions;
         }
 
-        public Task<Transaction> UpdateAsync(Transaction entity)
+        public async Task<Transaction> UpdateAsync(Transaction entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Transactions.Update(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
     }
 }

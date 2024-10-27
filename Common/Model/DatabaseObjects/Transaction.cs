@@ -20,7 +20,6 @@ namespace Common.Model.DatabaseObjects
 
 
 
-
         // FKs
         public int CategoryId { get; set; }
         public int SubcategoryId { get; set; }
