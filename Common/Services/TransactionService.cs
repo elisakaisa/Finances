@@ -81,7 +81,7 @@ namespace Common.Services
 
         private async Task ValidateTransactionData(Transaction transaction)
         {
-            if (!MandatoryFieldsAreFilled(transaction))
+            if (!MandatoryFieldsAreFilled(transaction) || !UserShareHasValidValues(transaction))
             {
                 throw new MissingOrWrongTransactionDataException();
             }
@@ -109,13 +109,18 @@ namespace Common.Services
 
         private static bool MandatoryFieldsAreFilled(Transaction transaction)
         {
-            if (transaction.Id == Guid.Empty
-                || transaction.Description == string.Empty
-                || transaction.Amount == 0
-                || transaction.CategoryId == 0
-                || transaction.SubcategoryId == 0
-                || transaction.UserId == Guid.Empty) return false;
+            return transaction.Id != Guid.Empty
+                && transaction.Description != string.Empty
+                && transaction.Amount != 0
+                && transaction.CategoryId != 0
+                && transaction.SubcategoryId != 0
+                && transaction.UserId != Guid.Empty;
+        }
+
+        private static bool UserShareHasValidValues(Transaction transaction)
+        {
             if (transaction.SplitType == SplitType.Custom && transaction.UserShare == null) return false;
+            else if (transaction.SplitType == SplitType.Custom && (transaction.UserShare < 0 || transaction.UserShare > 1)) return false;
             return true;
         }
 

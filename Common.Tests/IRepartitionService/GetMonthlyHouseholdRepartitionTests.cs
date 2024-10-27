@@ -284,12 +284,16 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
                 var householdIncome = income1 + income2;
-                var incomeU1 = householdIncome == 0 ? 0.5m : income1 / householdIncome;
-                var incomeU2 = householdIncome == 0 ? 0.5m : income2 / householdIncome;
-                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeU1));
-                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeU2));
+                var incomeUserShare1 = householdIncome == 0 ? 0.5m : income1 / householdIncome;
+                var incomeUserShare2 = householdIncome == 0 ? 0.5m : income2 / householdIncome;
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeUserShare1));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeUserShare2));
                 Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
                 Assert.That(result.ActualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
+                Assert.That(result.IncomeAfterTax[GeneralTestData.User1Hh1Id], Is.EqualTo(income1));
+                Assert.That(result.IncomeAfterTax[GeneralTestData.User2Hh1Id], Is.EqualTo(income2));
+                Assert.That(result.UserSharesOfHouseholdIncome[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeUserShare1));
+                Assert.That(result.UserSharesOfHouseholdIncome[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeUserShare2));
             });
         }
 
@@ -326,6 +330,17 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpensesPaidByUser[GeneralTestData.User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(GeneralTestData.User2Hh1Id)));
                 Assert.That(result.UserShouldPay[GeneralTestData.User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[GeneralTestData.User2Hh1Id], Is.EqualTo(user2ShouldPay));
+                var householdIncome = income1 + income2;
+                var incomeUserShare1 = householdIncome == 0 ? 0.5m : income1 / householdIncome;
+                var incomeUserShare2 = householdIncome == 0 ? 0.5m : income2 / householdIncome;
+                Assert.That(result.TargetUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeUserShare1));
+                Assert.That(result.TargetUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeUserShare2));
+                Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(1));
+                Assert.That(result.ActualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0));
+                Assert.That(result.IncomeAfterTax[GeneralTestData.User1Hh1Id], Is.EqualTo(income1));
+                Assert.That(result.IncomeAfterTax[GeneralTestData.User2Hh1Id], Is.EqualTo(income2));
+                Assert.That(result.UserSharesOfHouseholdIncome[GeneralTestData.User1Hh1Id], Is.EqualTo(incomeUserShare1));
+                Assert.That(result.UserSharesOfHouseholdIncome[GeneralTestData.User2Hh1Id], Is.EqualTo(incomeUserShare2));
             });
         }
 

@@ -162,5 +162,32 @@ namespace Common.Tests.ITransactionService
             // Assert
             Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
         }
+
+        [TestCase(-0.2)]
+        [TestCase(2)]
+        public void CreateTransaction_ThrowsError_IfUserShareHasInvalidValueForCustomSplitType(decimal userShare)
+        {
+            // Arrange
+            var newTransaction = new Transaction
+            {
+                Id = GeneralTestData.User1Hh1Id,
+                Description = "uukhash",
+                Date = new DateOnly(2024, 01, 01),
+                TransactionType = TransactionType.Income,
+                SplitType = SplitType.Custom,
+                UserShare = userShare,
+                Amount = 123m,
+                FinancialMonth = "202412",
+                CategoryId = GeneralTestData.Income.Id,
+                SubcategoryId = GeneralTestData.IncomeMisc.Id,
+                UserId = GeneralTestData.User1Hh1Id
+            };
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction));
+        }
     }
 }
