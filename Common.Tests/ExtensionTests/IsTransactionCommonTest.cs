@@ -16,7 +16,12 @@ namespace Common.Tests.ExtensionTests
         public void IsTransactionCommon_ReturnsFalse_WhenTransactionIsNotExpense(TransactionType type)
         {
             // Arrange
-            var testTransaction = new Transaction() { TransactionType = type };
+            var testTransaction = new Transaction()
+            {
+                TransactionType = type,
+                Description = "test",
+                FinancialMonth = "202412"
+            };
 
             // Act
             var isTransactionCommon = testTransaction.IsTransactionCommon();
@@ -33,6 +38,8 @@ namespace Common.Tests.ExtensionTests
             {
                 TransactionType = TransactionType.Expenses,
                 SplitType = SplitType.Individual,
+                Description = "test",
+                FinancialMonth = "202412"
             };
 
             // Act
@@ -52,6 +59,8 @@ namespace Common.Tests.ExtensionTests
             {
                 TransactionType = TransactionType.Expenses,
                 SplitType = splitType,
+                Description = "test",
+                FinancialMonth = "202412"
             };
 
             // Act

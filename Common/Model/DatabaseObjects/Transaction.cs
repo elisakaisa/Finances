@@ -5,7 +5,7 @@ namespace Common.Model.DatabaseObjects
     public class Transaction
     {
         public Guid Id { get; set; }
-        public string Description { get; set; }
+        public required string Description { get; set; }
         public DateOnly Date { get; set; }
         public string? FromOrTo { get; set; }
         public string? Location { get; set; }
@@ -16,7 +16,7 @@ namespace Common.Model.DatabaseObjects
         public decimal Amount { get; set; }
         public bool ToVerify { get; set; }
         public ModeOfPayment ModeOfPayment { get; set; }
-        public string FinancialMonth { get; set; }
+        public required string FinancialMonth { get; set; }
 
 
 

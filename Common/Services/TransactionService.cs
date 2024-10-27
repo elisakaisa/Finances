@@ -33,6 +33,9 @@ namespace Common.Services
             ValidateThatUserIsInHousehold(transaction, user);
             await ValidateTransactionData(transaction);
 
+            //TODO: add validation that income are individual expense types
+            //TODO: add validation income type / category
+
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
             return createdTransaction;
         }

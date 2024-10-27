@@ -5,7 +5,7 @@ namespace Common.Model.DatabaseObjects
     public class Category
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public State State { get; set; }
         public TransactionType TransactionType { get; set; }
 

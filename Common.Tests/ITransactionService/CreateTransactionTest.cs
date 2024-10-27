@@ -7,7 +7,7 @@ using Moq;
 
 namespace Common.Tests.ITransactionService
 {
-    public class CreateTransactionTest
+    public class CreateTransactionTest : GeneralTestData
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<IMonthlyIncomeAfterTaxRepository> _monthlyIncomeAfterTaxRepo;
@@ -31,20 +31,8 @@ namespace Common.Tests.ITransactionService
         public async Task CreateTransaction_IsSuccessful_IfContainsAllMandatoryFieldsAndDefaultValuesForNonMandatory()
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
@@ -70,20 +58,8 @@ namespace Common.Tests.ITransactionService
         public async Task CreateTransaction_IsSuccessful_IisCreatedByUserInHousehold()
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
@@ -102,20 +78,8 @@ namespace Common.Tests.ITransactionService
         public void CreateTransaction_ThrowsError_IfIsCreatedByUserNotInHousehold()
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
@@ -136,20 +100,7 @@ namespace Common.Tests.ITransactionService
         public void CreateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = financialMonth,
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, financialMonth: financialMonth, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
@@ -195,7 +146,9 @@ namespace Common.Tests.ITransactionService
             var newTransaction = new Transaction
             {
                 Id = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
+                User = GeneralTestData.User11,
+                Description = "test",
+                FinancialMonth = "202412"
             };
 
             // Act
@@ -209,20 +162,7 @@ namespace Common.Tests.ITransactionService
         public void CreateTransaction_ThrowsError_IfUserShareIsNullForCustomSplitType()
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Custom,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Expenses, SplitType.Custom, categoryId: Utilities.Id, subcategoryId: Electricity.Id);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
@@ -236,21 +176,7 @@ namespace Common.Tests.ITransactionService
         public void CreateTransaction_ThrowsError_IfUserShareHasInvalidValueForCustomSplitType(decimal userShare)
         {
             // Arrange
-            var newTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Custom,
-                UserShare = userShare,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var newTransaction = CreateTransaction(123m, TransactionType.Expenses, SplitType.Custom, userShare: userShare, categoryId: Utilities.Id, subcategoryId: Electricity.Id);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);

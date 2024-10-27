@@ -11,10 +11,6 @@ namespace Common.Tests
         public static readonly Guid User1Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000011");
         public static readonly Guid User2Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000012");
 
-        public static readonly Guid FinancialMonthDecHh1Id = Guid.Parse("00000000-0000-0012-0000-000000000010");
-        public static readonly Guid FinancialMonthJanHh1Id = Guid.Parse("00000000-0000-0001-0000-000000000010");
-        public static readonly Guid FinancialMonthFebHh1Id = Guid.Parse("00000000-0000-0002-0000-000000000010");
-
         public Household Household10 = new()
         {
             Id = Household1Id,
@@ -105,6 +101,38 @@ namespace Common.Tests
         };
 
 
+        protected Transaction CreateTransaction(
+            decimal amount,
+            TransactionType type,
+            SplitType splitType = SplitType.Even,
+            Guid? userId = null,
+            User user = null,
+            string financialMonth = "202412",
+            decimal? userShare = null,
+            int? categoryId = null,
+            int? subcategoryId = null) => new()
+            {
+                Id = Guid.NewGuid(),
+                Amount = amount,
+                TransactionType = type,
+                SplitType = splitType,
+                UserId = userId ?? User1Hh1Id,
+                User = user ?? User11,
+                Description = "test",
+                FinancialMonth = financialMonth,
+                UserShare = userShare,
+                CategoryId = categoryId ?? 1,
+                SubcategoryId = subcategoryId ?? 1
+            };
+
+        protected MonthlyIncomeAfterTax CreateMonthlyIncome(decimal income, Guid userId, User user) => new()
+        {
+            IncomeAfterTax = income,
+            UserId = userId,
+            User = user
+        };
+
+
 
         // Generic Transactions without user / household
         public static List<Transaction> TestTransactions =
@@ -126,6 +154,7 @@ namespace Common.Tests
             Amount = 150.75m,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Debit,
+            FinancialMonth = "202412",
 
             // Foreign Keys
             CategoryId = 2,
@@ -145,6 +174,7 @@ namespace Common.Tests
             Amount = 15000,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Transfer,
+            FinancialMonth = "202412",
 
             // Foreign Keys
             CategoryId = 1,
@@ -164,6 +194,7 @@ namespace Common.Tests
             Amount = 120,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Debit,
+            FinancialMonth = "202412",
 
             // Foreign Keys
             CategoryId = 2,
@@ -183,6 +214,7 @@ namespace Common.Tests
             Amount = 15.23m,
             ToVerify = false,
             ModeOfPayment = ModeOfPayment.Transfer,
+            FinancialMonth = "202412",
 
             // Foreign Keys
             CategoryId = 1,
