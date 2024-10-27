@@ -7,7 +7,7 @@ using Moq;
 
 namespace Common.Tests.ITransactionService
 {
-    public class UpdateTransactionTests
+    public class UpdateTransactionTests : GeneralTestData
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<IMonthlyIncomeAfterTaxRepository> _monthlyIncomeAfterTaxRepo;
@@ -31,34 +31,13 @@ namespace Common.Tests.ITransactionService
         public async Task UpdateTransaction_IsSuccessful_IfContainsAllMandatoryFieldsAndDefaultValuesForNonMandatory()
         {
             // Arrange
-            var oldTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Even,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
-            var updatedTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var oldTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
+                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
+                                                   category: Income, subcategory: IncomeMisc);
+            var updatedTransaction = CreateTransaction(1000m, TransactionType.Income, SplitType.Individual,
+                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
+                                                   category: Income, subcategory: IncomeMisc);
+
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
@@ -66,11 +45,11 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.UpdateAsync(oldTransaction, GeneralTestData.User11);
+            var result = await sut.UpdateAsync(updatedTransaction, GeneralTestData.User11);
 
             // Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.SplitType, Is.Not.EqualTo(oldTransaction.SplitType));
+            Assert.That(result.Amount, Is.Not.EqualTo(oldTransaction.Amount));
         }
 
         [TestCase("")]
@@ -80,34 +59,9 @@ namespace Common.Tests.ITransactionService
         public void UpdateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
         {
             // Arrange
-            var oldTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = financialMonth,
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
-            var updatedTransaction = new Transaction
-            {
-                Id = GeneralTestData.User1Hh1Id,
-                Description = "uukhash",
-                Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
-                SplitType = SplitType.Individual,
-                Amount = 123m,
-                FinancialMonth = financialMonth,
-                CategoryId = GeneralTestData.Income.Id,
-                SubcategoryId = GeneralTestData.IncomeMisc.Id,
-                UserId = GeneralTestData.User1Hh1Id,
-                User = GeneralTestData.User11
-            };
+            var updatedTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, financialMonth: financialMonth,
+                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
+                                                   category: Income, subcategory: IncomeMisc);
 
             _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(updatedTransaction);
@@ -116,7 +70,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(oldTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction, GeneralTestData.User11));
         }
     }
 }

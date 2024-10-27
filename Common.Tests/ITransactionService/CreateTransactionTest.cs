@@ -31,7 +31,9 @@ namespace Common.Tests.ITransactionService
         public async Task CreateTransaction_IsSuccessful_IfContainsAllMandatoryFieldsAndDefaultValuesForNonMandatory()
         {
             // Arrange
-            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
+                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
+                                                   category: Income, subcategory: IncomeMisc);
 
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
@@ -58,7 +60,9 @@ namespace Common.Tests.ITransactionService
         public async Task CreateTransaction_IsSuccessful_IisCreatedByUserInHousehold()
         {
             // Arrange
-            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
+                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
+                                                   category: Income, subcategory: IncomeMisc);
 
             _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
@@ -177,6 +181,36 @@ namespace Common.Tests.ITransactionService
         {
             // Arrange
             var newTransaction = CreateTransaction(123m, TransactionType.Expenses, SplitType.Custom, userShare: userShare, categoryId: Utilities.Id, subcategoryId: Electricity.Id);
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+        }
+
+        [TestCase(SplitType.IncomeBased)]
+        [TestCase(SplitType.Even)]
+        [TestCase(SplitType.Custom)]
+        public void CreateTransaction_ThrowsError_IfTransactionIsIncomeAndSplitNotIndividual(SplitType splitType)
+        {
+            // Arrange
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, splitType, userShare: 0.5m, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+        }
+
+        [Test]
+        public void CreateTransaction_ThrowsError_IfCategoryAndExpenseTypeDoNotMatch()
+        {
+            // Arrange
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
+                                                   categoryId: Utilities.Id, subcategoryId: Electricity.Id,
+                                                   category: Utilities, subcategory: Electricity);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);

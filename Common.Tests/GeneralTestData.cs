@@ -76,6 +76,7 @@ namespace Common.Tests
         {
             Id = 1,
             Name = "Income",
+            TransactionType = TransactionType.Income,
             Subcategories = [Salary, IncomeMisc]
         };
         public static Subcategory Electricity = new()
@@ -97,6 +98,7 @@ namespace Common.Tests
         {
             Id = 2,
             Name = "Income",
+            TransactionType = TransactionType.Expenses,
             Subcategories = [Electricity, HomeInsurance]
         };
 
@@ -110,7 +112,9 @@ namespace Common.Tests
             string financialMonth = "202412",
             decimal? userShare = null,
             int? categoryId = null,
-            int? subcategoryId = null) => new()
+            int? subcategoryId = null,
+            Category? category = null,
+            Subcategory? subcategory = null) => new()
             {
                 Id = Guid.NewGuid(),
                 Amount = amount,
@@ -122,7 +126,9 @@ namespace Common.Tests
                 FinancialMonth = financialMonth,
                 UserShare = userShare,
                 CategoryId = categoryId ?? 1,
-                SubcategoryId = subcategoryId ?? 1
+                SubcategoryId = subcategoryId ?? 1,
+                Category = category ?? new Category { Name = "test"},
+                Subcategory = subcategory ?? new Subcategory { Name = "test"}
             };
 
         protected MonthlyIncomeAfterTax CreateMonthlyIncome(decimal income, Guid userId, User user) => new()

@@ -33,9 +33,6 @@ namespace Common.Services
             ValidateThatUserIsInHousehold(transaction, user);
             await ValidateTransactionData(transaction);
 
-            //TODO: add validation that income are individual expense types
-            //TODO: add validation income type / category
-
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
             return createdTransaction;
         }
@@ -101,12 +98,22 @@ namespace Common.Services
         {
             if (!MandatoryFieldsAreFilled(transaction) || !UserShareHasValidValues(transaction))
             {
-                throw new MissingOrWrongTransactionDataException();
+                throw new MissingOrWrongTransactionDataException("Mandatory fields are not filled");
             }
 
             if (!transaction.FinancialMonth.IsFinancialMonthOfCorrectFormat())
             {
                 throw new FinancialMonthOfWrongFormatException();
+            }
+
+            if (transaction.TransactionType == TransactionType.Income && transaction.SplitType != SplitType.Individual)
+            {
+                throw new MissingOrWrongTransactionDataException("Income can only be an individual expense");
+            }
+
+            if (transaction.TransactionType != transaction.Category.TransactionType)
+            {
+                throw new MissingOrWrongTransactionDataException("Category is of the wrong transaction type");
             }
 
             var subcategoriesInCategory = await _categoryRepository.GetCategorysSubcategories(transaction.CategoryId);
