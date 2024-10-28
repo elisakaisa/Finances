@@ -25,6 +25,8 @@ namespace Common.Tests.ITransactionService
             _categoryRepository = new Mock<ICategoryRepository>();
             _subcategoryRepository = new Mock<ISubcategoryRepository>();
             _userRepository = new Mock<IUserRepository>();
+
+            InitializeSubcategories();
         }
 
         [Test]
@@ -32,10 +34,9 @@ namespace Common.Tests.ITransactionService
         {
             // Arrange
             var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
-                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
-                                                   category: Income, subcategory: IncomeMisc);
+                                                    subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc);
 
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(newTransaction);
@@ -64,7 +65,7 @@ namespace Common.Tests.ITransactionService
                                                    categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
                                                    category: Income, subcategory: IncomeMisc);
 
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(newTransaction);
@@ -84,7 +85,7 @@ namespace Common.Tests.ITransactionService
             // Arrange
             var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
 
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.CreateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(newTransaction);
@@ -104,7 +105,7 @@ namespace Common.Tests.ITransactionService
         public void CreateTransaction_ThrowsError_IfFinancialMonthHasWrongFormat(string financialMonth)
         {
             // Arrange
-            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, financialMonth: financialMonth, categoryId: Income.Id, subcategoryId: IncomeMisc.Id);
+            var newTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, financialMonth: financialMonth, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc);
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
@@ -123,20 +124,18 @@ namespace Common.Tests.ITransactionService
                 Id = GeneralTestData.User1Hh1Id,
                 Description = "uukhash",
                 Date = new DateOnly(2024, 01, 01),
-                TransactionType = TransactionType.Income,
+                TransactionType = TransactionType.Expenses,
                 SplitType = SplitType.Individual,
                 Amount = 123m,
                 FinancialMonth = "202412",
-                CategoryId = GeneralTestData.Income.Id,
                 SubcategoryId = GeneralTestData.Electricity.Id,
                 UserId = GeneralTestData.User1Hh1Id,
-                Category = GeneralTestData.Income,
-                Subcategory = GeneralTestData.Electricity,
+                Subcategory = GeneralTestData.Electricity, // irrelevant what is here, bc mock returns income categories
                 User = GeneralTestData.User11
             };
 
             // Act
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>())).ReturnsAsync(GeneralTestData.Income.Subcategories);
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>())).ReturnsAsync(GeneralTestData.Income.Subcategories);
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert

@@ -85,7 +85,7 @@ namespace Common.Services
 
         public async Task<Transaction> UpdateAsync(Transaction transaction, User user)
         {
-            ValidateThatUserIsInHousehold(user, transaction.User.Household.Id);
+            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
             await ValidateTransactionData(transaction);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
@@ -111,12 +111,12 @@ namespace Common.Services
                 throw new MissingOrWrongTransactionDataException("Income can only be an individual expense");
             }
 
-            if (transaction.TransactionType != transaction.Category.TransactionType)
+            if (transaction.TransactionType != transaction.Subcategory.Category.TransactionType)
             {
                 throw new MissingOrWrongTransactionDataException("Category is of the wrong transaction type");
             }
 
-            var subcategoriesInCategory = await _categoryRepository.GetCategorysSubcategories(transaction.CategoryId);
+            var subcategoriesInCategory = await _subcategoryRepository.GetSubcategoryByCategoryIdAsync(transaction.Subcategory.CategoryId);
             if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
             {
                 throw new SubcategoryNotContainedInCategoryException();
@@ -137,7 +137,7 @@ namespace Common.Services
             return transaction.Id != Guid.Empty
                 && transaction.Description != string.Empty
                 && transaction.Amount != 0
-                && transaction.CategoryId != 0
+                && transaction.Subcategory.CategoryId != 0
                 && transaction.SubcategoryId != 0
                 && transaction.UserId != Guid.Empty;
         }

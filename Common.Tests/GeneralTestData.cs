@@ -57,6 +57,14 @@ namespace Common.Tests
 
 
         // Categories and subcategories
+        public static Category Income = new()
+        {
+            Id = 1,
+            Name = "Income",
+            TransactionType = TransactionType.Income,
+            Subcategories = new List<Subcategory>() 
+        };
+
         public static Subcategory Salary = new()
         {
             Id = 11,
@@ -64,6 +72,7 @@ namespace Common.Tests
             CategoryId = 1,
             State = State.Active
         };
+
         public static Subcategory IncomeMisc = new()
         {
             Id = 12,
@@ -72,35 +81,53 @@ namespace Common.Tests
             State = State.Active
         };
 
-        public static Category Income = new()
+
+        public static Category Utilities = new()
         {
-            Id = 1,
-            Name = "Income",
-            TransactionType = TransactionType.Income,
-            Subcategories = [Salary, IncomeMisc]
+            Id = 2,
+            Name = "Utilities",
+            TransactionType = TransactionType.Expenses,
+            Subcategories = new List<Subcategory>()
         };
+
+
         public static Subcategory Electricity = new()
         {
             Id = 21,
             Name = "Electricity",
-            CategoryId = 1,
-            State = State.Active
+            CategoryId = 2,
+            State = State.Active,
+            Category = Utilities
         };
+
         public static Subcategory HomeInsurance = new()
         {
             Id = 22,
             Name = "HomeInsurance",
-            CategoryId = 1,
-            State = State.Active
+            CategoryId = 2,
+            State = State.Active,
+            Category = Utilities
         };
 
-        public Category Utilities = new()
+        protected static void InitializeSubcategories()
         {
-            Id = 2,
-            Name = "Income",
-            TransactionType = TransactionType.Expenses,
-            Subcategories = [Electricity, HomeInsurance]
-        };
+            // Set the Category for each subcategory
+            Electricity.Category = Utilities;
+            HomeInsurance.Category = Utilities;
+
+            // Add subcategories to Utilities
+            Utilities.Subcategories.Add(Electricity);
+            Utilities.Subcategories.Add(HomeInsurance);
+
+            // Set the Category for each subcategory
+            Salary.Category = Income;
+            IncomeMisc.Category = Income;
+
+            // Add subcategories to the Income category
+            Income.Subcategories.Add(Salary);
+            Income.Subcategories.Add(IncomeMisc);
+        }
+
 
 
         protected Transaction CreateTransaction(
@@ -115,21 +142,22 @@ namespace Common.Tests
             int? subcategoryId = null,
             Category? category = null,
             Subcategory? subcategory = null) => new()
-            {
-                Id = Guid.NewGuid(),
-                Amount = amount,
-                TransactionType = type,
-                SplitType = splitType,
-                UserId = userId ?? User1Hh1Id,
-                User = user ?? User11,
-                Description = "test",
-                FinancialMonth = financialMonth,
-                UserShare = userShare,
-                CategoryId = categoryId ?? 1,
-                SubcategoryId = subcategoryId ?? 1,
-                Category = category ?? new Category { Name = "test"},
-                Subcategory = subcategory ?? new Subcategory { Name = "test"}
-            };
+        {
+            Id = Guid.NewGuid(),
+            Amount = amount,
+            TransactionType = type,
+            SplitType = splitType,
+            UserId = userId ?? User1Hh1Id,
+            User = user ?? User11,
+            Description = "test",
+            FinancialMonth = financialMonth,
+            UserShare = userShare,
+            SubcategoryId = subcategoryId ?? 1,
+            Subcategory = subcategory ?? new Subcategory 
+                { 
+                    Name = "test",
+                }
+        };
 
         protected MonthlyIncomeAfterTax CreateMonthlyIncome(decimal income, Guid userId, User user) => new()
         {
@@ -163,7 +191,6 @@ namespace Common.Tests
             FinancialMonth = "202412",
 
             // Foreign Keys
-            CategoryId = 2,
             SubcategoryId = 22, 
         };
         public static Transaction genericIncome1 = new()
@@ -183,7 +210,6 @@ namespace Common.Tests
             FinancialMonth = "202412",
 
             // Foreign Keys
-            CategoryId = 1,
             SubcategoryId = 11,
         };
         public static Transaction genericExpense2 = new()
@@ -203,7 +229,6 @@ namespace Common.Tests
             FinancialMonth = "202412",
 
             // Foreign Keys
-            CategoryId = 2,
             SubcategoryId = 21,
         };
         public static Transaction genericIncome2 = new()
@@ -223,7 +248,6 @@ namespace Common.Tests
             FinancialMonth = "202412",
 
             // Foreign Keys
-            CategoryId = 1,
             SubcategoryId = 12,
         };
 

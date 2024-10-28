@@ -25,6 +25,7 @@ namespace Common.Tests.ITransactionService
             _categoryRepository = new Mock<ICategoryRepository>();
             _subcategoryRepository = new Mock<ISubcategoryRepository>();
             _userRepository = new Mock<IUserRepository>();
+            InitializeSubcategories();
         }
 
         [Test]
@@ -38,7 +39,7 @@ namespace Common.Tests.ITransactionService
                                                    categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
                                                    category: Income, subcategory: IncomeMisc);
 
-            _categoryRepository.Setup(r => r.GetCategorysSubcategories(It.IsAny<int>()))
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
             _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(updatedTransaction);
@@ -60,8 +61,8 @@ namespace Common.Tests.ITransactionService
         {
             // Arrange
             var updatedTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual, financialMonth: financialMonth,
-                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
-                                                   category: Income, subcategory: IncomeMisc);
+                                                   subcategoryId: IncomeMisc.Id,
+                                                   subcategory: IncomeMisc);
 
             _transactionRepo.Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
                 .ReturnsAsync(updatedTransaction);

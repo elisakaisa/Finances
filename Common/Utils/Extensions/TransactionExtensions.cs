@@ -13,7 +13,7 @@ namespace Common.Utils.Extensions
 
         public static decimal SumTransactionsByCategory(this ICollection<Transaction> transactions, int categoryId)
         {
-            return transactions.Where(t => t.CategoryId == categoryId).ToList().Sum(t => t.Amount);
+            return transactions.Where(t => t.Subcategory.CategoryId == categoryId).ToList().Sum(t => t.Amount);
         }
 
         public static decimal SumUserTransactionsBySubCategory(this ICollection<Transaction> transactions, int subcategoryId, Guid userId)
@@ -23,7 +23,7 @@ namespace Common.Utils.Extensions
 
         public static decimal SumUserTransactionsByCategory(this ICollection<Transaction> transactions, int categoryId, Guid userId)
         {
-            return transactions.Where(t => t.CategoryId == categoryId && t.UserId == userId).ToList().Sum(t => t.Amount);
+            return transactions.Where(t => t.Subcategory.CategoryId == categoryId && t.UserId == userId).ToList().Sum(t => t.Amount);
         }
 
         public static decimal SumHouseholdTransactionsBySubCategory(this ICollection<Transaction> transactions, int subcategoryId, Guid householdId)
@@ -33,7 +33,7 @@ namespace Common.Utils.Extensions
 
         public static decimal SumHouseholdTransactionsByCategory(this ICollection<Transaction> transactions, int categoryId, Guid householdId)
         {
-            return transactions.Where(t => t.CategoryId == categoryId && t.User.HouseholdId == householdId).ToList().Sum(t => t.Amount);
+            return transactions.Where(t => t.Subcategory.CategoryId == categoryId && t.User.HouseholdId == householdId).ToList().Sum(t => t.Amount);
         }
 
         public static decimal SumTotalByTransactionType(this ICollection<Transaction> transactions, TransactionType type)

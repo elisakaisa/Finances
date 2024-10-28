@@ -39,8 +39,8 @@ namespace Common.Repositories
             var transaction = await _dbContext.Transactions
                 .Include(t => t.User)
                     .ThenInclude(t => t.Household)
-                .Include(t => t.Category)
                 .Include(t => t.Subcategory)
+                    .ThenInclude(t => t.Category)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             return transaction ?? throw new KeyNotFoundException($"Transaction with ID {id} was not found.");
@@ -51,8 +51,8 @@ namespace Common.Repositories
             var monthlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
                     .ThenInclude(t => t.Household)
-                .Include(t => t.Category)
                 .Include(t => t.Subcategory)
+                    .ThenInclude(t => t.Category)
                 .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth == monthYear)
                 .ToListAsync();
 
@@ -64,8 +64,8 @@ namespace Common.Repositories
             var monthlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
                     .ThenInclude(t => t.Household)
-                .Include(t => t.Category)
                 .Include(t => t.Subcategory)
+                    .ThenInclude(t => t.Category)
                 .Where(t => t.User.Id == userId && t.FinancialMonth == monthYear)
                 .ToListAsync();
 
@@ -78,8 +78,8 @@ namespace Common.Repositories
             var yearlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
                     .ThenInclude(t => t.Household)
-                .Include(t => t.Category)
                 .Include(t => t.Subcategory)
+                    .ThenInclude(t => t.Category)
                 .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth.StartsWith(yearS))
                 .ToListAsync();
 
@@ -92,8 +92,8 @@ namespace Common.Repositories
             var yearlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
                     .ThenInclude(t => t.Household)
-                .Include(t => t.Category)
                 .Include(t => t.Subcategory)
+                    .ThenInclude(t => t.Category)
                 .Where(t => t.User.Id == userId && t.FinancialMonth.StartsWith(yearS))
                 .ToListAsync();
 
