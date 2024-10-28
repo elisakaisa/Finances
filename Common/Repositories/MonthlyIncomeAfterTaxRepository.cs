@@ -1,13 +1,23 @@
-﻿using Common.Model.DatabaseObjects;
+﻿using Common.Database;
+using Common.Model.DatabaseObjects;
 using Common.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
     public class MonthlyIncomeAfterTaxRepository : IMonthlyIncomeAfterTaxRepository
     {
-        public Task<MonthlyIncomeAfterTax> CreateAsync(MonthlyIncomeAfterTax entity)
+        public readonly FinancesDbContext _dbContext;
+
+        public MonthlyIncomeAfterTaxRepository(FinancesDbContext context)
         {
-            throw new NotImplementedException();
+            _dbContext = context;
+        }
+        public async Task<MonthlyIncomeAfterTax> CreateAsync(MonthlyIncomeAfterTax entity)
+        {
+            await _dbContext.MonthlyIncomesAfterTax.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
         public Task<bool> DeleteAsync(MonthlyIncomeAfterTax entity)
@@ -20,14 +30,25 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAsync(Guid userId, string monthYear)
+        public async Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAsync(Guid householdId, string monthYear)
         {
-            throw new NotImplementedException();
+            var monthlyIncomes = await _dbContext.MonthlyIncomesAfterTax
+                .Include(i => i.User)
+                    .ThenInclude(t => t.Household)
+                .Where(i => i.User.HouseholdId == householdId && i.FinancialMonth == monthYear)
+                .ToListAsync();
+            return monthlyIncomes;
         }
 
-        public Task<ICollection<MonthlyIncomeAfterTax>> GetYearlyIncomeAfterTaxByHouseholdIdAsync(Guid userId, int year)
+        public async Task<ICollection<MonthlyIncomeAfterTax>> GetYearlyIncomeAfterTaxByHouseholdIdAsync(Guid householdId, int year)
         {
-            throw new NotImplementedException();
+            var yearS = year.ToString();
+            var monthlyIncomes = await _dbContext.MonthlyIncomesAfterTax
+                .Include(i => i.User)
+                    .ThenInclude(t => t.Household)
+                .Where(i => i.User.HouseholdId == householdId && i.FinancialMonth.StartsWith(yearS))
+                .ToListAsync();
+            return monthlyIncomes;
         }
 
         public Task<MonthlyIncomeAfterTax> GetMonthlyIncomeAfterTaxByUserIdAsync(Guid userId, string monthYear)
@@ -40,9 +61,11 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<MonthlyIncomeAfterTax> UpdateAsync(MonthlyIncomeAfterTax entity)
+        public async Task<MonthlyIncomeAfterTax> UpdateAsync(MonthlyIncomeAfterTax entity)
         {
-            throw new NotImplementedException();
+            _dbContext.MonthlyIncomesAfterTax.Update(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
     }
 }

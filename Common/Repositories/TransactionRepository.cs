@@ -38,6 +38,7 @@ namespace Common.Repositories
         {
             var transaction = await _dbContext.Transactions
                 .Include(t => t.User)
+                    .ThenInclude(t => t.Household)
                 .Include(t => t.Category)
                 .Include(t => t.Subcategory)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -49,6 +50,7 @@ namespace Common.Repositories
         {
             var monthlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
+                    .ThenInclude(t => t.Household)
                 .Include(t => t.Category)
                 .Include(t => t.Subcategory)
                 .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth == monthYear)
@@ -61,6 +63,7 @@ namespace Common.Repositories
         {
             var monthlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
+                    .ThenInclude(t => t.Household)
                 .Include(t => t.Category)
                 .Include(t => t.Subcategory)
                 .Where(t => t.User.Id == userId && t.FinancialMonth == monthYear)
@@ -74,6 +77,7 @@ namespace Common.Repositories
             var yearS = year.ToString();
             var yearlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
+                    .ThenInclude(t => t.Household)
                 .Include(t => t.Category)
                 .Include(t => t.Subcategory)
                 .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth.StartsWith(yearS))
@@ -87,6 +91,7 @@ namespace Common.Repositories
             var yearS = year.ToString();
             var yearlyTransactions = await _dbContext.Transactions
                 .Include(t => t.User)
+                    .ThenInclude(t => t.Household)
                 .Include(t => t.Category)
                 .Include(t => t.Subcategory)
                 .Where(t => t.User.Id == userId && t.FinancialMonth.StartsWith(yearS))

@@ -30,7 +30,7 @@ namespace Common.Services
         /// <returns>The created transaction</returns>
         public async Task<Transaction> CreateAsync(Transaction transaction, User user)
         {
-            ValidateThatUserIsInHousehold(transaction, user);
+            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
             await ValidateTransactionData(transaction);
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
@@ -45,7 +45,7 @@ namespace Common.Services
         /// <returns>True/False if the transaction has been deleted</returns>
         public async Task<bool> DeleteAsync(Transaction transaction, User user)
         {
-            ValidateThatUserIsInHousehold(transaction, user);
+            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
             return await _transactionRepository.DeleteAsync(transaction);
         }
 
@@ -85,7 +85,7 @@ namespace Common.Services
 
         public async Task<Transaction> UpdateAsync(Transaction transaction, User user)
         {
-            ValidateThatUserIsInHousehold(transaction, user);
+            ValidateThatUserIsInHousehold(user, transaction.User.Household.Id);
             await ValidateTransactionData(transaction);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);

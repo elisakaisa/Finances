@@ -1,28 +1,50 @@
-﻿using Common.Model.DatabaseObjects;
+﻿using Common.Database;
+using Common.Model.DatabaseObjects;
+using Common.Model.Enums;
 using Common.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
     public class CategorySubcategoryRepository : ICategoryRepository, ISubcategoryRepository
     {
-        public Task<ICollection<Category>> GetAllAsync()
+        public readonly FinancesDbContext _dbContext;
+
+        public CategorySubcategoryRepository(FinancesDbContext context)
         {
-            throw new NotImplementedException();
+            _dbContext = context;
         }
 
-        public Task<ICollection<Subcategory>> GetCategorysSubcategories(int categoryId)
+        async Task<ICollection<Category>> ICategoryRepository.GetAllAsync()
         {
-            throw new NotImplementedException();
+            var categories = await _dbContext.Categories.ToListAsync();
+            return categories;
         }
 
-        public Task<ICollection<Subcategory>> GetSubcategoryByCategoryIdAsync(int categoryId)
+        async Task<ICollection<Category>> ICategoryRepository.GetAllAsyncByTransactionType(TransactionType type)
         {
-            throw new NotImplementedException();
+            var categories = await _dbContext.Categories
+                .Include(c => c.Subcategories) //TODO: figure this out
+                .Where(c => c.TransactionType == type)
+                .ToListAsync();
+            return categories;
         }
 
-        Task<ICollection<Subcategory>> ISubcategoryRepository.GetAllAsync()
+        public async Task<ICollection<Subcategory>> GetSubcategoryByCategoryIdAsync(int categoryId)
         {
-            throw new NotImplementedException();
+            var categorysSubcategories = await _dbContext.Subcategories
+                .Include(s => s.Category)
+                .Where(s => s.CategoryId == categoryId)
+                .ToListAsync();
+            return categorysSubcategories;
+        }
+
+        async Task<ICollection<Subcategory>> ISubcategoryRepository.GetAllAsync()
+        {
+            var subcategories = await _dbContext.Subcategories
+                .Include(s => s.Category)
+                .ToListAsync();
+            return subcategories;
         }
     }
 }

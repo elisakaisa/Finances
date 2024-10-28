@@ -26,6 +26,7 @@ namespace Common.Model.DatabaseObjects
         public Guid UserId { get; set; }
 
         // Navigation property: Each transaction has one category
+        // TODO should this be removed sionce cat can be inferred from subcat?
         public Category Category { get; set; }
 
         // Navigation property: Each transaction has one subcategory
