@@ -5,7 +5,6 @@ using Common.Tests.IRepartitionService.TestData;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 using Moq;
-using System.Collections.Generic;
 
 namespace Common.Tests.IRepartitionService
 {
