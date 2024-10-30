@@ -85,7 +85,7 @@ namespace Common.Tests.ISummaryService
             Assert.That(result, Has.Count.EqualTo(subcategories.Count));
 
             // by subcategory, household level
-            var resultElectricity = result.Where(r => r.SubcategoryId == Electricity.Id).ToList();
+            var resultElectricity = result.Where(r => r.Subcategory == Electricity).ToList();
             Assert.That(resultElectricity, Is.Not.Null);
             Assert.That(resultElectricity, Has.Count.EqualTo(1));
             var resultElectricity2 = resultElectricity.First();
