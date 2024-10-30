@@ -1,13 +1,13 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Repositories.Interfaces;
 using Common.Services;
-using Common.Tests.IRepartitionService.TestData;
+using Common.Tests.TestData;
 using Common.Utils.Exceptions;
 using Moq;
 
 namespace Common.Tests.IRepartitionService
 {
-    public class GetYearlyHouseholdRepartitionTests : HouseholdRepartitionTestData
+    public class GetYearlyHouseholdRepartitionTests : TestDataBuilder
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<IMonthlyIncomeAfterTaxRepository> _monthlyIncomeAfterTaxRepo;

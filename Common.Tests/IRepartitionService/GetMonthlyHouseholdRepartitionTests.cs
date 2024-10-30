@@ -1,14 +1,14 @@
 ﻿using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services;
-using Common.Tests.IRepartitionService.TestData;
+using Common.Tests.TestData;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 using Moq;
 
 namespace Common.Tests.IRepartitionService
 {
-    public class GetMonthlyHouseholdRepartitionTests : HouseholdRepartitionTestData
+    public class GetMonthlyHouseholdRepartitionTests : TestDataBuilder
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<IMonthlyIncomeAfterTaxRepository> _monthlyIncomeAfterTaxRepo;
@@ -306,7 +306,7 @@ namespace Common.Tests.IRepartitionService
             (decimal transactionAmount1, decimal transactionAmount2, decimal income1, decimal income2, decimal user1ShouldPay, decimal user2ShouldPay)
         {
             // Arrange
-            var testTransactions = GetTwoTransactionByUsersWithSplitByIncome(transactionAmount1, transactionAmount2);
+            var testTransactions = GetTwoTransactionByUser1WithSplitByIncome(transactionAmount1, transactionAmount2);
             var montlyIncomeAfterTaxUser = GetMonthlyIncomesAfterTax(income1, income2);
 
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "2024-12"))

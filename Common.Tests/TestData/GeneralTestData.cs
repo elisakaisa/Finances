@@ -1,7 +1,7 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Model.Enums;
 
-namespace Common.Tests
+namespace Common.Tests.TestData
 {
     public class GeneralTestData
     {
@@ -62,7 +62,7 @@ namespace Common.Tests
             Id = 1,
             Name = "Income",
             TransactionType = TransactionType.Income,
-            Subcategories = new List<Subcategory>() 
+            Subcategories = new List<Subcategory>()
         };
 
         public static Subcategory Salary = new()
@@ -142,22 +142,22 @@ namespace Common.Tests
             int? subcategoryId = null,
             Category? category = null,
             Subcategory? subcategory = null) => new()
-        {
-            Id = Guid.NewGuid(),
-            Amount = amount,
-            TransactionType = type,
-            SplitType = splitType,
-            UserId = userId ?? User1Hh1Id,
-            User = user ?? User11,
-            Description = "test",
-            FinancialMonth = financialMonth,
-            UserShare = userShare,
-            SubcategoryId = subcategoryId ?? 1,
-            Subcategory = subcategory ?? new Subcategory 
-                { 
+            {
+                Id = Guid.NewGuid(),
+                Amount = amount,
+                TransactionType = type,
+                SplitType = splitType,
+                UserId = userId ?? User1Hh1Id,
+                User = user ?? User11,
+                Description = "test",
+                FinancialMonth = financialMonth,
+                UserShare = userShare,
+                SubcategoryId = subcategoryId ?? 1,
+                Subcategory = subcategory ?? new Subcategory
+                {
                     Name = "test",
                 }
-        };
+            };
 
         protected MonthlyIncomeAfterTax CreateMonthlyIncome(decimal income, Guid userId, User user) => new()
         {
@@ -191,7 +191,7 @@ namespace Common.Tests
             FinancialMonth = "202412",
 
             // Foreign Keys
-            SubcategoryId = 22, 
+            SubcategoryId = 22,
         };
         public static Transaction genericIncome1 = new()
         {

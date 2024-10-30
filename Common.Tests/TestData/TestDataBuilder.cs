@@ -1,17 +1,17 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Model.Enums;
 
-namespace Common.Tests.IRepartitionService.TestData
+namespace Common.Tests.TestData
 {
-    public class HouseholdRepartitionTestData : GeneralTestData
+    public class TestDataBuilder : GeneralTestData
     {
         public Household GetHouseholdWith1User()
         {
             return new()
             {
-                Id = GeneralTestData.Household1Id,
+                Id = Household1Id,
                 Name = "Household10",
-                Users = [ new User() { Id = GeneralTestData.User1Hh1Id, Name = "user1" }]
+                Users = [new User() { Id = User1Hh1Id, Name = "user1" }]
             };
         }
 
@@ -19,9 +19,9 @@ namespace Common.Tests.IRepartitionService.TestData
         {
             return new()
             {
-                Id = GeneralTestData.Household1Id,
+                Id = Household1Id,
                 Name = "Household10",
-                Users = [new User() { Id = GeneralTestData.User1Hh1Id, Name = "user1" }, new User() { Id = GeneralTestData.User2Hh1Id, Name = "user2" }]
+                Users = [new User() { Id = User1Hh1Id, Name = "user1" }, new User() { Id = User2Hh1Id, Name = "user2" }]
             };
         }
 
@@ -29,9 +29,9 @@ namespace Common.Tests.IRepartitionService.TestData
         {
             return new()
             {
-                Id = GeneralTestData.Household1Id,
+                Id = Household1Id,
                 Name = "Household10",
-                Users = [new User() { Id = GeneralTestData.User1Hh1Id, Name = "user1" }, new User() { Id = GeneralTestData.User2Hh1Id, Name = "user2" }, new User() { Id = GeneralTestData.User1Hh1Id, Name = "user3" }]
+                Users = [new User() { Id = User1Hh1Id, Name = "user1" }, new User() { Id = User2Hh1Id, Name = "user2" }, new User() { Id = User1Hh1Id, Name = "user3" }]
             };
         }
 
@@ -48,7 +48,7 @@ namespace Common.Tests.IRepartitionService.TestData
         [
             CreateTransaction(expense1U1, TransactionType.Expenses, SplitType.Even),
             CreateTransaction(expense2U1, TransactionType.Expenses, SplitType.Even),
-            CreateTransaction(expense1U2, TransactionType.Expenses, SplitType.Even, GeneralTestData.User2Hh1Id, GeneralTestData.User12),
+            CreateTransaction(expense1U2, TransactionType.Expenses, SplitType.Even, User2Hh1Id, User12),
             CreateTransaction(102m, TransactionType.Savings, SplitType.Even),
             CreateTransaction(-payback1U1, TransactionType.Expenses, SplitType.Even),
             CreateTransaction(1234m, TransactionType.Income, SplitType.Even)
@@ -59,7 +59,7 @@ namespace Common.Tests.IRepartitionService.TestData
         [
             CreateTransaction(expense1U1, TransactionType.Expenses, SplitType.IncomeBased),
             CreateTransaction(expense2U1, TransactionType.Expenses, SplitType.IncomeBased),
-            CreateTransaction(expense1U2, TransactionType.Expenses, SplitType.IncomeBased, GeneralTestData.User2Hh1Id, GeneralTestData.User12),
+            CreateTransaction(expense1U2, TransactionType.Expenses, SplitType.IncomeBased, User2Hh1Id, User12),
             CreateTransaction(102m, TransactionType.Savings, SplitType.IncomeBased),
             CreateTransaction(-payback1U1, TransactionType.Expenses, SplitType.IncomeBased),
             CreateTransaction(1234m, TransactionType.Income, SplitType.IncomeBased)
@@ -81,7 +81,7 @@ namespace Common.Tests.IRepartitionService.TestData
             CreateTransaction(amount, TransactionType.Expenses, SplitType.IncomeBased)
         ];
 
-        public List<Transaction> GetTwoTransactionByUsersWithSplitByIncome(decimal amount1, decimal amount2) =>
+        public List<Transaction> GetTwoTransactionByUser1WithSplitByIncome(decimal amount1, decimal amount2) =>
         [
             CreateTransaction(amount1, TransactionType.Expenses, SplitType.IncomeBased),
             CreateTransaction(amount2, TransactionType.Expenses, SplitType.IncomeBased)
@@ -95,15 +95,29 @@ namespace Common.Tests.IRepartitionService.TestData
             CreateTransaction(amountIndividual, TransactionType.Expenses, SplitType.Individual)
         ];
 
+        public List<Transaction> GetFourTransactionsByTwoUsersWithTwoSubcategories() =>
+        [
+            CreateTransaction(20m, TransactionType.Expenses, SplitType.Even, subcategory: Electricity, subcategoryId: Electricity.Id),
+            CreateTransaction(40m, TransactionType.Income, SplitType.Individual, subcategory: Salary, subcategoryId: Salary.Id),
+            CreateTransaction(35m, TransactionType.Expenses, SplitType.Individual, subcategory: Electricity, subcategoryId: Electricity.Id),
+            CreateTransaction(25m, TransactionType.Income, SplitType.Individual, subcategory: IncomeMisc, subcategoryId: IncomeMisc.Id),
+        ];
+
+
+        public List<Subcategory> GetListOfFourSubCategories() =>
+        [
+            Electricity, HomeInsurance, Salary, IncomeMisc
+        ];
+
         public List<MonthlyIncomeAfterTax> GetMonthlyIncomesAfterTax(decimal income1, decimal income2) =>
         [
-            CreateMonthlyIncome(income1, GeneralTestData.User1Hh1Id, GeneralTestData.User11),
-            CreateMonthlyIncome(income2, GeneralTestData.User2Hh1Id, GeneralTestData.User12)
+            CreateMonthlyIncome(income1, User1Hh1Id, User11),
+            CreateMonthlyIncome(income2, User2Hh1Id, User12)
         ];
 
         public List<MonthlyIncomeAfterTax> GetMonthlyIncomesAfterTaxForOneUserHousehold(decimal income1) =>
         [
-            CreateMonthlyIncome(income1, GeneralTestData.User1Hh1Id, GeneralTestData.User11)
+            CreateMonthlyIncome(income1, User1Hh1Id, User11)
         ];
     }
 }
