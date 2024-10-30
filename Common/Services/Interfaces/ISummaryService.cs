@@ -5,7 +5,7 @@ namespace Common.Services.Interfaces
 {
     public interface ISummaryService
     {
-        Task<List<MonthlyHouseholdTransactionSum>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, User user);
-        Task<List<MonthlyHouseholdTransactionSum>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid householdId, User user);
+        Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, User user);
+        Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid householdId, User user);
     }
 }

@@ -95,12 +95,20 @@ namespace Common.Tests.TestData
             CreateTransaction(amountIndividual, TransactionType.Expenses, SplitType.Individual)
         ];
 
-        public List<Transaction> GetFourTransactionsByTwoUsersWithTwoSubcategories() =>
+        public List<Transaction> GetFourTransactionsByTwoUsersWithThreeSubcategories() =>
         [
             CreateTransaction(20m, TransactionType.Expenses, SplitType.Even, subcategory: Electricity, subcategoryId: Electricity.Id),
             CreateTransaction(40m, TransactionType.Income, SplitType.Individual, subcategory: Salary, subcategoryId: Salary.Id),
-            CreateTransaction(35m, TransactionType.Expenses, SplitType.Individual, subcategory: Electricity, subcategoryId: Electricity.Id),
-            CreateTransaction(25m, TransactionType.Income, SplitType.Individual, subcategory: IncomeMisc, subcategoryId: IncomeMisc.Id),
+            CreateTransaction(35m, TransactionType.Expenses, SplitType.Individual, subcategory: Electricity, subcategoryId: Electricity.Id, userId: User2Hh1Id, user: User12),
+            CreateTransaction(25m, TransactionType.Income, SplitType.Individual, subcategory: IncomeMisc, subcategoryId: IncomeMisc.Id, userId: User2Hh1Id, user: User12),
+        ];
+
+        public List<Transaction> GetFourTransactionsByTwoUsersWithOneSubcategories(decimal amountEven1, decimal amountIncome, decimal amountEven2, decimal amountIndividual) =>
+        [
+            CreateTransaction(amountEven1, TransactionType.Expenses, SplitType.Even, subcategory: Electricity, subcategoryId: Electricity.Id),
+            CreateTransaction(amountIncome, TransactionType.Expenses, SplitType.IncomeBased, subcategory: Electricity, subcategoryId: Electricity.Id),
+            CreateTransaction(amountEven2, TransactionType.Expenses, SplitType.Even, subcategory: Electricity, subcategoryId: Electricity.Id, userId: User2Hh1Id, user: User12),
+            CreateTransaction(amountIndividual, TransactionType.Expenses, SplitType.Individual, subcategory: Electricity, subcategoryId: Electricity.Id, userId: User2Hh1Id, user: User12),
         ];
 
 

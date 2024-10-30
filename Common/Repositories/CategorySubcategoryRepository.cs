@@ -24,6 +24,7 @@ namespace Common.Repositories
         async Task<ICollection<Category>> ICategoryRepository.GetAllAsyncByTransactionType(TransactionType type)
         {
             var categories = await _dbContext.Categories
+                .AsNoTracking()
                 .Include(c => c.Subcategories) //TODO: figure this out
                 .Where(c => c.TransactionType == type)
                 .ToListAsync();
@@ -33,6 +34,7 @@ namespace Common.Repositories
         public async Task<ICollection<Subcategory>> GetSubcategoryByCategoryIdAsync(int categoryId)
         {
             var categorysSubcategories = await _dbContext.Subcategories
+                .AsNoTracking()
                 .Include(s => s.Category)
                 .Where(s => s.CategoryId == categoryId)
                 .ToListAsync();
@@ -42,6 +44,7 @@ namespace Common.Repositories
         async Task<ICollection<Subcategory>> ISubcategoryRepository.GetAllAsync()
         {
             var subcategories = await _dbContext.Subcategories
+                .AsNoTracking()
                 .Include(s => s.Category)
                 .ToListAsync();
             return subcategories;
