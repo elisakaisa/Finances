@@ -1,4 +1,5 @@
 ﻿using Common.Model.DatabaseObjects;
+using Common.Model.Enums;
 using Common.Model.Dtos;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
@@ -26,58 +27,59 @@ namespace Common.Services
             var subcategories = await _subcategoryRepository.GetAllAsync();
             var household = await _householdRepository.GetByIdAsync(householdId);
 
-            var householdLevelMonthlySummaries = new List<HouseholdLevelMonthlySummary>();
-            
-
-            foreach (var subcategory in subcategories)
-            {
-                var totalSum = 0m;
-                var commonHouseholdSum = 0m;
-                UserLevelMonthlySummary userLevelMonthlySummary;
-                var userLevelMonthlySummaries = new List<UserLevelMonthlySummary>();
-
-                foreach (var userInHousehold in household.Users)
-                {
-                    var transactionsByUserAndSubcategory = transactions.Where(t => t.UserId == userInHousehold.Id && t.Subcategory == subcategory);
-                    totalSum += transactionsByUserAndSubcategory.Sum(t => t.Amount);
-                    var commonPaidByUser = transactionsByUserAndSubcategory.Where(t => t.SplitType != Model.Enums.SplitType.Individual).Sum(t => t.Amount);
-                    var individualPaidByUser = transactionsByUserAndSubcategory.Where(t => t.SplitType == Model.Enums.SplitType.Individual).Sum(t => t.Amount);
-                    commonHouseholdSum += commonPaidByUser;
-
-                    userLevelMonthlySummary = new UserLevelMonthlySummary()
-                    {
-                        CommonTotal = commonPaidByUser,
-                        IndividualTotal = individualPaidByUser,
-                        Total = commonPaidByUser + individualPaidByUser,
-                        User = userInHousehold
-                    };
-                    userLevelMonthlySummaries.Add(userLevelMonthlySummary);
-                }
-
-
-                var transactionSum = new HouseholdLevelMonthlySummary
-                { 
-                    FinancialMonth = financialMonth,
-                    Year = int.Parse(financialMonth.Substring(0, 4)),
-                    TransactionType = subcategory.TransactionType,
-                    CategoryId = subcategory.CategoryId,
-                    SubcategoryId = subcategory.Id,
-                    Total = totalSum,
-                    CommonTotal = commonHouseholdSum,
-                    UserLevelMonthlySummary = userLevelMonthlySummaries,
-                    Household = household,
-                };
-                householdLevelMonthlySummaries.Add(transactionSum);
-            }
-
-
-            return householdLevelMonthlySummaries;
+            return CalculateHouseholdLevelMonthlySummaries2(transactions, subcategories, household, financialMonth);
         }
 
         public Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, User user)
         {
             ValidateThatUserIsInHousehold(user, householdId);
             throw new NotImplementedException();
+        }
+
+
+        private static List<HouseholdLevelMonthlySummary> CalculateHouseholdLevelMonthlySummaries2(ICollection<Transaction> transactions, ICollection<Subcategory> subcategories, Household household, string financialMonth)
+        {
+            return subcategories.Select(subcategory =>
+                CalculateHouseholdSummaryForSubcategory(subcategory, transactions, household, financialMonth))
+                .ToList();
+        }
+
+        private static HouseholdLevelMonthlySummary CalculateHouseholdSummaryForSubcategory(Subcategory subcategory, ICollection<Transaction> transactions, Household household, string financialMonth)
+        {
+            var userLevelMonthlySummaries = household.Users
+                .Select(user => CalculateUserSummary(transactions, user, subcategory))
+                .ToList();
+
+            var totalSum = userLevelMonthlySummaries.Sum(summary => summary.Total);
+            var commonHouseholdSum = userLevelMonthlySummaries.Sum(summary => summary.CommonTotal);
+
+            return new HouseholdLevelMonthlySummary
+            {
+                FinancialMonth = financialMonth,
+                Year = int.Parse(financialMonth[..4]),
+                TransactionType = subcategory.TransactionType,
+                CategoryId = subcategory.CategoryId,
+                SubcategoryId = subcategory.Id,
+                Total = totalSum,
+                CommonTotal = commonHouseholdSum,
+                UserLevelMonthlySummary = userLevelMonthlySummaries,
+                Household = household
+            };
+        }
+
+        private static UserLevelMonthlySummary CalculateUserSummary(ICollection<Transaction> transactions, User user,  Subcategory subcategory)
+        {
+            var userTransactions = transactions.Where(t => t.UserId == user.Id && t.Subcategory == subcategory);
+            var individualTotal = userTransactions.Where(t => t.SplitType == SplitType.Individual).Sum(t => t.Amount);
+            var commonTotal = userTransactions.Where(t => t.SplitType != SplitType.Individual).Sum(t => t.Amount);
+
+            return new UserLevelMonthlySummary
+            {
+                CommonTotal = commonTotal,
+                IndividualTotal = individualTotal,
+                Total = commonTotal + individualTotal,
+                User = user
+            };
         }
     }
 }
