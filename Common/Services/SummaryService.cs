@@ -27,17 +27,31 @@ namespace Common.Services
             var subcategories = await _subcategoryRepository.GetAllAsync();
             var household = await _householdRepository.GetByIdAsync(householdId);
 
-            return CalculateHouseholdLevelMonthlySummaries2(transactions, subcategories, household, financialMonth);
+            return CalculateHouseholdLevelMonthlySummaries(transactions, subcategories, household, financialMonth);
         }
 
-        public Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, User user)
+        public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, User user)
         {
             ValidateThatUserIsInHousehold(user, householdId);
-            throw new NotImplementedException();
+
+            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
+            var subcategories = await _subcategoryRepository.GetAllAsync();
+            var household = await _householdRepository.GetByIdAsync(householdId);
+
+            var householdLevelMonthlySummaries = new List<HouseholdLevelMonthlySummary>();
+
+            for (int month = 1; month <= 12; month++)
+            {
+                string financialMonth = $"{year}{month:D2}";
+                var householdLevelMonthlySummary = CalculateHouseholdLevelMonthlySummaries(transactions, subcategories, household, financialMonth);
+                householdLevelMonthlySummaries.AddRange(householdLevelMonthlySummary);
+            }
+
+            return householdLevelMonthlySummaries;
         }
 
 
-        private static List<HouseholdLevelMonthlySummary> CalculateHouseholdLevelMonthlySummaries2(ICollection<Transaction> transactions, ICollection<Subcategory> subcategories, Household household, string financialMonth)
+        private static List<HouseholdLevelMonthlySummary> CalculateHouseholdLevelMonthlySummaries(ICollection<Transaction> transactions, ICollection<Subcategory> subcategories, Household household, string financialMonth)
         {
             return subcategories.Select(subcategory =>
                 CalculateHouseholdSummaryForSubcategory(subcategory, transactions, household, financialMonth))
