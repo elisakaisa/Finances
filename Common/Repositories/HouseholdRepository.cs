@@ -1,10 +1,19 @@
-﻿using Common.Model.DatabaseObjects;
+﻿using Common.Database;
+using Common.Model.DatabaseObjects;
 using Common.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
     public class HouseholdRepository : IHouseholdRepository
     {
+        public readonly FinancesDbContext _dbContext;
+
+        public HouseholdRepository(FinancesDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public Task<Household> CreateAsync(Household entity)
         {
             throw new NotImplementedException();
@@ -15,9 +24,14 @@ namespace Common.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<Household> GetByIdAsync(Guid id)
+        public async Task<Household> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var household = await _dbContext.Households
+                            .AsNoTracking()
+                            .Include(h => h.Users)
+                            .FirstOrDefaultAsync(h => h.Id == id);
+
+            return household ?? throw new KeyNotFoundException($"Transaction with ID {id} was not found.");
         }
 
         public Task<Household> UpdateAsync(Household entity)
