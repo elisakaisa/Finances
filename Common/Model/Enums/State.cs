@@ -2,7 +2,7 @@
 {
     public enum State
     {
-        Active,
-        Obsolete
+        Active = 0,
+        Obsolete = 1
     }
 }

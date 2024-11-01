@@ -2,8 +2,8 @@
 {
     public enum TransactionType
     {
-        Income,
         Expenses,
+        Income,
         Savings,
         //Payback //Payaback = negative expense
     }
