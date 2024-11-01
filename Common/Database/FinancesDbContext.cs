@@ -14,7 +14,21 @@ namespace Common.Database
 
         public FinancesDbContext(DbContextOptions<FinancesDbContext> options) : base(options) { }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<MonthlyIncomeAfterTax>()
+                .Property(m => m.IncomeAfterTax)
+                .HasPrecision(12, 3);
 
-        //TODO: add model mapping
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(12, 3);
+
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.UserShare)
+                .HasPrecision(4, 2);
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }
