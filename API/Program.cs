@@ -1,4 +1,8 @@
 using Common.Database;
+using Common.Repositories;
+using Common.Repositories.Interfaces;
+using Common.Services;
+using Common.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +17,20 @@ builder.Services.AddSwaggerGen();
 var dbConnectionString = builder.Configuration.GetConnectionString("DbConnection");
 builder.Services.AddDbContext<FinancesDbContext>(options => 
     options.UseSqlServer(dbConnectionString));
+
+// Register repositories
+builder.Services.AddScoped<ICategoryRepository, CategorySubcategoryRepository>();
+builder.Services.AddScoped<ISubcategoryRepository, CategorySubcategoryRepository>();
+builder.Services.AddScoped<IMonthlyIncomeAfterTaxRepository, MonthlyIncomeAfterTaxRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IHouseholdRepository, HouseholdRepository>();
+
+// Register services
+builder.Services.AddScoped<IMonthlyIncomeAfterTaxesService, MonthlyIncomeAfterTaxService>();
+builder.Services.AddScoped<IRepartitionService, RepartitionService>();
+builder.Services.AddScoped<ISummaryService, SummaryService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 var app = builder.Build();
 
