@@ -1,3 +1,5 @@
+using Common.Model.DatabaseObjects;
+using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Tests.TestData;
@@ -13,6 +15,8 @@ namespace Common.Tests.ITransactionService
         private Mock<ISubcategoryRepository> _subcategoryRepository;
         private Mock<IUserRepository> _userRepository;
 
+        private List<Transaction> _testTransactions = new List<Transaction>();
+
         [SetUp]
         public void Setup()
         {
@@ -20,7 +24,10 @@ namespace Common.Tests.ITransactionService
             _categoryRepository = new Mock<ICategoryRepository>();
             _subcategoryRepository = new Mock<ISubcategoryRepository>();
             _userRepository = new Mock<IUserRepository>();
+
+            InitializeTestTransactions();
         }
+
 
         [Test]
         public async Task GetMonthlyTransactionByUserId_ReturnsMonthlyTransactions_IfUserIsPartOfHousehold()
@@ -28,7 +35,7 @@ namespace Common.Tests.ITransactionService
             // Arrange
             var financialMonth = "202412";
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .ReturnsAsync(GeneralTestData.TestTransactions);
+                .ReturnsAsync(_testTransactions);
             _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
 
             //Act
@@ -38,7 +45,7 @@ namespace Common.Tests.ITransactionService
 
             //Assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(GeneralTestData.TestTransactions, Has.Count.EqualTo(result.Count));
+            Assert.That(result, Has.Count.EqualTo(_testTransactions.Count));
         }
 
         [Test]
@@ -47,7 +54,7 @@ namespace Common.Tests.ITransactionService
             // Arrange
             var financialMonth = "202412";
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .ReturnsAsync(GeneralTestData.TestTransactions);
+                .ReturnsAsync(_testTransactions);
             _userRepository.Setup(r => r.GetByIdAsync(User22.Id)).ReturnsAsync(User22);
             _userRepository.Setup(r => r.GetByIdAsync(User1Hh1Id)).ReturnsAsync(User11);
 
@@ -64,7 +71,7 @@ namespace Common.Tests.ITransactionService
             // Arrange
             var financialMonth = "2024012";
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
-                .ReturnsAsync(GeneralTestData.TestTransactions);
+                .ReturnsAsync(_testTransactions);
             _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
 
             //Act
@@ -72,6 +79,15 @@ namespace Common.Tests.ITransactionService
 
             //Assert
             Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, User1Hh1Id));
+        }
+        private void InitializeTestTransactions()
+        {
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Income, SplitType.Individual, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc));
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Income, SplitType.Individual, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc));
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Income, SplitType.Individual, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc));
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Expenses, SplitType.Even, subcategoryId: Electricity.Id, subcategory: Electricity));
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Income, SplitType.Individual, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc));
+            _testTransactions.Add(CreateTransaction(123m, TransactionType.Income, SplitType.Individual, subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc));
         }
     }
 }

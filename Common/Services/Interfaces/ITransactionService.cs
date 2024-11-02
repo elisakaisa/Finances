@@ -7,10 +7,10 @@ namespace Common.Services.Interfaces
     {
         Task<Transaction> CreateAsync(TransactionDto transactionDto, Guid requestingUserId);
         Task<Transaction> UpdateAsync(TransactionDto transactionDto, Guid requestingUserId); 
-        Task<bool> DeleteAsync(Transaction transactionDto, Guid requestingUserId);
-        Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId);
-        Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUserId);
-        Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, int year, Guid requestingUserId);
-        Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUserId);
+        Task<bool> DeleteAsync(TransactionDto transactionDto, Guid requestingUserId);
+        Task<ICollection<TransactionDto>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId);
+        Task<ICollection<TransactionDto>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUserId);
+        Task<ICollection<TransactionDto>> GetYearlyTransactionsByUserId(Guid userId, int year, Guid requestingUserId);
+        Task<ICollection<TransactionDto>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUserId);
     }
 }

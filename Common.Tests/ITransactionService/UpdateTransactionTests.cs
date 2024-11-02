@@ -33,6 +33,10 @@ namespace Common.Tests.ITransactionService
             _userRepository.Setup(r => r.GetByIdAsync(User22.Id)).ReturnsAsync(User22);
             _userRepository.Setup(r => r.GetByIdAsync(User1Hh1Id)).ReturnsAsync(User11);
             _userRepository.Setup(r => r.GetByIdAsync(User2Hh1Id)).ReturnsAsync(User12);
+
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByName(IncomeMisc.Name)).ReturnsAsync(IncomeMisc);
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByName(Salary.Name)).ReturnsAsync(Salary);
+            _subcategoryRepository.Setup(r => r.GetSubcategoryByName(Electricity.Name)).ReturnsAsync(Electricity);
         }
 
         [Test]

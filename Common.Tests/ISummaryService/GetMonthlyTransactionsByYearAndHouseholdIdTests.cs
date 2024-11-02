@@ -3,10 +3,11 @@ using Common.Services;
 using Common.Tests.TestData;
 using Moq;
 using System.Text.RegularExpressions;
+using Common.Utils.Extensions;
 
 namespace Common.Tests.ISummaryService
 {
-    public partial class GetMonthlyTransactionsByYearAndHouseholdIdTests : TestDataBuilder
+    public class GetMonthlyTransactionsByYearAndHouseholdIdTests : TestDataBuilder
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<ISubcategoryRepository> _subcetgoryRepo;
@@ -44,11 +45,8 @@ namespace Common.Tests.ISummaryService
             Assert.That(result, Has.Count.EqualTo(12*subcategories.Count));
             foreach(var row in result)
             {
-                Assert.That(HasyyyyMMShape().IsMatch(row.FinancialMonth), Is.True);
+                Assert.That(row.FinancialMonth.IsFinancialMonthOfCorrectFormat(), Is.True);
             }
         }
-
-        [GeneratedRegex(@"^2024\d{2}$")]
-        private static partial Regex HasyyyyMMShape();
     }
 }

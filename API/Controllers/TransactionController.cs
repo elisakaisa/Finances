@@ -1,5 +1,7 @@
 using Common.Model.Dtos;
 using Common.Services.Interfaces;
+using Common.Utils.Exceptions;
+using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -28,7 +30,6 @@ namespace API.Controllers
 
             try
             {
-                // Service retrieves user details using userId and verifies access
                 var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
                 return CreatedAtAction(nameof(GetTransactionById), new { id = createdTransaction.Id }, createdTransaction);
             }
@@ -43,6 +44,34 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, "An error occurred while creating the transaction.");
+            }
+        }
+
+
+        [HttpGet("household/{householdId}/monthly-transactions")]
+        public async Task<IActionResult> GetMonthlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
+        {
+            if (householdId == Guid.Empty || financialMonth == null || financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
+            {
+                return BadRequest("Household ID, financial month, and requesting user ID are required.");
+            }
+
+            try
+            {
+                var transactions = await _transactionService.GetMonthlyTransactionsByHouseholdId(householdId, financialMonth, requestingUserId);
+                return Ok(transactions);
+            }
+            catch (UserNotInHouseholdException)
+            {
+                return Forbid("User is not authorized to view transactions for this household.");
+            }
+            catch (FinancialMonthOfWrongFormatException)
+            {
+                return BadRequest("Financial month of wrong format exception");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while retrieving transactions.");
             }
         }
 

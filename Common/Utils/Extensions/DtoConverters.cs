@@ -27,5 +27,34 @@ namespace Common.Utils.Extensions
                 UserId = transaction.UserId
             };
         }
+
+        public static ICollection<TransactionDto> ConvertToDto(this ICollection<Transaction> transactions)
+        {
+            return transactions.Select(transaction => transaction.ConvertToDto()).ToList();
+        }
+
+        public static Transaction ConvertToDbObject(this TransactionDto transactionDto, User user, Subcategory subcategory)
+        {
+            return new Transaction
+            {
+                Id = transactionDto.Id,
+                Description = transactionDto.Description,
+                Date = transactionDto.Date,
+                FromOrTo = transactionDto.FromOrTo,
+                Location = transactionDto.Location,
+                ExcludeFromSummary = transactionDto.ExcludeFromSummary,
+                TransactionType = transactionDto.TransactionType,
+                SplitType = transactionDto.SplitType,
+                UserShare = transactionDto.UserShare,
+                Amount = transactionDto.Amount,
+                ToVerify = transactionDto.ToVerify,
+                ModeOfPayment = transactionDto.ModeOfPayment,
+                FinancialMonth = transactionDto.FinancialMonth,
+                SubcategoryId = subcategory.Id,
+                Subcategory = subcategory,
+                UserId = user.Id,
+                User = user
+            };
+        }
     }
 }

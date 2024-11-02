@@ -37,7 +37,7 @@ namespace Common.Services
 
             var subcategory = await _subcategoryRepository.GetSubcategoryByName(transactionDto.SubcategoryName);
             ValidateTransactionCategory(transactionDto, subcategory);
-            var transaction = ConvertDto(transactionDto, user, subcategory);
+            var transaction = transactionDto.ConvertToDbObject(user, subcategory);
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
             return createdTransaction;
@@ -49,44 +49,50 @@ namespace Common.Services
         /// <param name="transaction">The transaction to be deleted</param>
         /// <param name="user">The user deleting the transaction</param>
         /// <returns>True/False if the transaction has been deleted</returns>
-        public async Task<bool> DeleteAsync(Transaction transaction, Guid requestingUser)
+        public async Task<bool> DeleteAsync(TransactionDto transactionDto, Guid requestingUser)
         {
-            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
+            var user = await _userRepository.GetByIdAsync(transactionDto.UserId);
+            await ValidateThatUserIsInHousehold(requestingUser, user.HouseholdId);
+
+            var subcategory = await _subcategoryRepository.GetSubcategoryByName(transactionDto.SubcategoryName);
+            ValidateTransactionCategory(transactionDto, subcategory);
+            var transaction = transactionDto.ConvertToDbObject(user, subcategory);
+            // TODO: double check if whole transaction is needed or if id is fine
             return await _transactionRepository.DeleteAsync(transaction);
         }
 
-        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUser)
+        public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUserId)
         {
-            await ValidateThatUserIsInHousehold(requestingUser, householdId);
             ValidateFinancialMonth(financialMonth);
+            await ValidateThatUserIsInHousehold(requestingUserId, householdId);
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
-            return transactions;
+            return transactions.ConvertToDto();
         }
 
-        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId)
+        public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId)
         {
+            ValidateFinancialMonth(financialMonth);
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
             await ValidateThatUserIsInHousehold(requestingUserId, userToGetTransactionsFrom.HouseholdId);
-            ValidateFinancialMonth(financialMonth);
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByUserIdAsync(userId, financialMonth);
-            return transactions;
+            return transactions.ConvertToDto();
         }
 
-        public async Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUser)
+        public async Task<ICollection<TransactionDto>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUser)
         {
             await ValidateThatUserIsInHousehold(requestingUser, householdId);
             var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
-            return transactions;
+            return transactions.ConvertToDto();
         }
 
-        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, int year, Guid requestingUser)
+        public async Task<ICollection<TransactionDto>> GetYearlyTransactionsByUserId(Guid userId, int year, Guid requestingUser)
         {
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
             await ValidateThatUserIsInHousehold(requestingUser, userToGetTransactionsFrom.HouseholdId);
             var transactions = await _transactionRepository.GetYearlyTransactionsByUserIdAsync(userId, year);
-            return transactions;
+            return transactions.ConvertToDto();
         }
 
         public async Task<Transaction> UpdateAsync(TransactionDto transactionDto, Guid requestingUser)
@@ -97,7 +103,7 @@ namespace Common.Services
 
             var subcategory = await _subcategoryRepository.GetSubcategoryByName(transactionDto.SubcategoryName);
             ValidateTransactionCategory(transactionDto, subcategory);
-            var transaction = ConvertDto(transactionDto, user, subcategory);
+            var transaction = transactionDto.ConvertToDbObject(user, subcategory);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
             return updatedTransaction;
@@ -120,32 +126,7 @@ namespace Common.Services
             {
                 throw new UserNotInHouseholdException();
             }
-
         }
-
-        private Transaction ConvertDto(TransactionDto transactionDto, User user, Subcategory subcategory)
-        {
-            return new Transaction
-            {
-                Id = transactionDto.Id,
-                Description = transactionDto.Description,
-                Date = transactionDto.Date,
-                FromOrTo = transactionDto.FromOrTo,
-                Location = transactionDto.Location,
-                ExcludeFromSummary = transactionDto.ExcludeFromSummary,
-                TransactionType = transactionDto.TransactionType,
-                SplitType = transactionDto.SplitType,
-                UserShare = transactionDto.UserShare,
-                Amount = transactionDto.Amount,
-                ToVerify = transactionDto.ToVerify,
-                ModeOfPayment = transactionDto.ModeOfPayment,
-                FinancialMonth = transactionDto.FinancialMonth,
-                SubcategoryId = 122222222,
-                UserId = user.Id,
-                User = user
-            };
-        }
-
 
 
         private void ValidateTransactionData(TransactionDto transactionDto)
@@ -173,6 +154,7 @@ namespace Common.Services
                 throw new MissingOrWrongTransactionDataException("Category is of the wrong transaction type");
             }
 
+            // TODO figure out if this is still needed
             //var subcategoriesInCategory = await _subcategoryRepository.GetSubcategoryByCategoryIdAsync(transactionDto.Subcategory.CategoryId);
             //if (!IsSubcategoryInCategory(subcategoriesInCategory, transactionDto.SubcategoryId))
             //{
