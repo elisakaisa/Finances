@@ -1,6 +1,7 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Model.Dtos;
 using Common.Model.Enums;
+using Common.Repositories;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
@@ -8,7 +9,7 @@ using Common.Utils.Extensions;
 
 namespace Common.Services
 {
-    public class RepartitionService : BaseService, IRepartitionService
+    public class RepartitionService : IRepartitionService
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly IMonthlyIncomeAfterTaxRepository _monthlyIncomeAfterTaxRepository;
@@ -23,11 +24,11 @@ namespace Common.Services
             _householdRepository = householdRepo;
         }
 
-        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, User user)
+        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, Guid requestingUserGuid)
         {
-            ValidateThatUserIsInHousehold(user, householdId);
-
             var household = await _householdRepository.GetByIdAsync(householdId);
+            ValidateThatUserIsInHousehold(requestingUserGuid, household);
+
             if (household.Users.Count > 2) 
             {
                 throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
@@ -44,11 +45,11 @@ namespace Common.Services
             return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, monthYear);
         }
 
-        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, User user)
+        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, householdId);
-
             var household = await _householdRepository.GetByIdAsync(householdId);
+            ValidateThatUserIsInHousehold(requestingUser, household);
+
             if (household.Users.Count > 2)
             {
                 throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
@@ -60,6 +61,16 @@ namespace Common.Services
             }
 
             return await CalculateYearlyRepartition(household, year);
+        }
+
+        private static void ValidateThatUserIsInHousehold(Guid requestingUserId, Household household)
+        {
+            var userIsInHousehold = household.Users.Select(h => h.Id == requestingUserId).FirstOrDefault();
+            if (!userIsInHousehold)
+            {
+                throw new UserNotInHouseholdException();
+            }
+
         }
 
         private async Task<List<Repartition>> CalculateYearlyRepartition(Household household, int year)

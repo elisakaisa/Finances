@@ -28,6 +28,10 @@ namespace Common.Tests.ITransactionService
             _userRepository = new Mock<IUserRepository>();
 
             InitializeSubcategories();
+
+            _userRepository.Setup(r => r.GetByIdAsync(User22.Id)).ReturnsAsync(User22);
+            _userRepository.Setup(r => r.GetByIdAsync(User1Hh1Id)).ReturnsAsync(User11);
+            _userRepository.Setup(r => r.GetByIdAsync(User2Hh1Id)).ReturnsAsync(User12);
         }
 
         [Test]
@@ -44,7 +48,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.CreateAsync(newTransaction, GeneralTestData.User11);
+            var result = await sut.CreateAsync(newTransaction,User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -73,7 +77,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.CreateAsync(newTransaction, GeneralTestData.User12);
+            var result = await sut.CreateAsync(newTransaction, User2Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -95,7 +99,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User22));
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.CreateAsync(newTransaction, User22.Id));
         }
 
 
@@ -112,7 +116,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [Test]
@@ -140,7 +144,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<SubcategoryNotContainedInCategoryException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [Test]
@@ -159,7 +163,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [Test]
@@ -172,7 +176,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [TestCase(-0.2)]
@@ -186,7 +190,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [TestCase(SplitType.IncomeBased)]
@@ -201,7 +205,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [Test]
@@ -216,7 +220,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
     }
 }

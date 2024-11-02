@@ -37,7 +37,7 @@ namespace Common.Tests.ISummaryService
 
             // act
             var sut = new SummaryService(_transactionRepo.Object, _subcetgoryRepo.Object, _householdRepo.Object);
-            var result = await sut.GetMonthlyTransactionsByYearAndHouseholdId(2024, Household1Id, User11);
+            var result = await sut.GetMonthlyTransactionsByYearAndHouseholdId(2024, Household1Id, User1Hh1Id);
 
             // assert
             Assert.That(result, Is.Not.Null);

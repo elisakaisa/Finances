@@ -6,7 +6,7 @@ using Moq;
 
 namespace Common.Tests.ITransactionService
 {
-    public class GetMonthlyTransactionByUserIdTest
+    public class GetMonthlyTransactionByUserIdTest : GeneralTestData
     {
         private Mock<ITransactionRepository> _transactionRepo;
         private Mock<ICategoryRepository> _categoryRepository;
@@ -33,7 +33,7 @@ namespace Common.Tests.ITransactionService
 
             //Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User11);
+            var result = await sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, User1Hh1Id);
 
 
             //Assert
@@ -45,16 +45,17 @@ namespace Common.Tests.ITransactionService
         public void GetMonthlyTransactionByUserId_ThrowsError_IfUserNotPartOfHousehold()
         {
             // Arrange
-            var financialMonth = "2024-12";
+            var financialMonth = "202412";
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByUserIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .ReturnsAsync(GeneralTestData.TestTransactions);
-            _userRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GeneralTestData.User11);
+            _userRepository.Setup(r => r.GetByIdAsync(User22.Id)).ReturnsAsync(User22);
+            _userRepository.Setup(r => r.GetByIdAsync(User1Hh1Id)).ReturnsAsync(User11);
 
             //Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             //Assert
-            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User21));
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyTransactionsByUserId(User1Hh1Id, financialMonth, User22.Id));
         }
 
         [Test]
@@ -70,7 +71,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             //Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, GeneralTestData.User11));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.GetMonthlyTransactionsByUserId(GeneralTestData.User1Hh1Id, financialMonth, User1Hh1Id));
         }
     }
 }

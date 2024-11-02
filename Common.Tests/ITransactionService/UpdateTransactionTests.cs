@@ -26,7 +26,12 @@ namespace Common.Tests.ITransactionService
             _categoryRepository = new Mock<ICategoryRepository>();
             _subcategoryRepository = new Mock<ISubcategoryRepository>();
             _userRepository = new Mock<IUserRepository>();
+
             InitializeSubcategories();
+
+            _userRepository.Setup(r => r.GetByIdAsync(User22.Id)).ReturnsAsync(User22);
+            _userRepository.Setup(r => r.GetByIdAsync(User1Hh1Id)).ReturnsAsync(User11);
+            _userRepository.Setup(r => r.GetByIdAsync(User2Hh1Id)).ReturnsAsync(User12);
         }
 
         [Test]
@@ -47,7 +52,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.UpdateAsync(updatedTransaction, GeneralTestData.User11);
+            var result = await sut.UpdateAsync(updatedTransaction, User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -72,7 +77,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction, GeneralTestData.User11));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction, User1Hh1Id));
         }
     }
 }

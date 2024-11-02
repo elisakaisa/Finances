@@ -38,7 +38,7 @@ namespace Common.Tests.IRepartitionService
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, GeneralTestData.User21));
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, User2Hh1Id));
             return Task.CompletedTask;
         }
 
@@ -68,7 +68,7 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, GeneralTestData.User11);
+            var result = await sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);

@@ -7,7 +7,7 @@ using Common.Utils.Extensions;
 
 namespace Common.Services
 {
-    public class TransactionService : BaseService, ITransactionService
+    public class TransactionService : ITransactionService
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly ISubcategoryRepository _subcategoryRepository;
@@ -28,9 +28,9 @@ namespace Common.Services
         /// <param name="transaction">The values of the new transaction</param>
         /// <param name="user">The user creating the transaction</param>
         /// <returns>The created transaction</returns>
-        public async Task<Transaction> CreateAsync(Transaction transaction, User user)
+        public async Task<Transaction> CreateAsync(Transaction transaction, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
+            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
             await ValidateTransactionData(transaction);
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
@@ -43,53 +43,63 @@ namespace Common.Services
         /// <param name="transaction">The transaction to be deleted</param>
         /// <param name="user">The user deleting the transaction</param>
         /// <returns>True/False if the transaction has been deleted</returns>
-        public async Task<bool> DeleteAsync(Transaction transaction, User user)
+        public async Task<bool> DeleteAsync(Transaction transaction, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
+            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
             return await _transactionRepository.DeleteAsync(transaction);
         }
 
-        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, User user)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, householdId);
+            await ValidateThatUserIsInHousehold(requestingUser, householdId);
             ValidateFinancialMonth(financialMonth);
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
             return transactions;
         }
 
-        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, User user)
+        public async Task<ICollection<Transaction>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId)
         {
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
-            ValidateThatUserIsInHousehold(user, userToGetTransactionsFrom.HouseholdId);
+            await ValidateThatUserIsInHousehold(requestingUserId, userToGetTransactionsFrom.HouseholdId);
             ValidateFinancialMonth(financialMonth);
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByUserIdAsync(userId, financialMonth);
             return transactions;
         }
 
-        public async Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, User user)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, householdId);
+            await ValidateThatUserIsInHousehold(requestingUser, householdId);
             var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
             return transactions;
         }
 
-        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, int year, User user)
+        public async Task<ICollection<Transaction>> GetYearlyTransactionsByUserId(Guid userId, int year, Guid requestingUser)
         {
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
-            ValidateThatUserIsInHousehold(user, userToGetTransactionsFrom.HouseholdId);
+            await ValidateThatUserIsInHousehold(requestingUser, userToGetTransactionsFrom.HouseholdId);
             var transactions = await _transactionRepository.GetYearlyTransactionsByUserIdAsync(userId, year);
             return transactions;
         }
 
-        public async Task<Transaction> UpdateAsync(Transaction transaction, User user)
+        public async Task<Transaction> UpdateAsync(Transaction transaction, Guid requestingUser)
         {
-            ValidateThatUserIsInHousehold(user, transaction.User.HouseholdId);
+            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
             await ValidateTransactionData(transaction);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
             return updatedTransaction;
+        }
+
+        private async Task ValidateThatUserIsInHousehold(Guid requestingUserId, Guid householdId)
+        {
+            var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
+            if (requestingUser.HouseholdId != householdId)
+            {
+                throw new UserNotInHouseholdException();
+            }
+
         }
 
 

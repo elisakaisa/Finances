@@ -28,14 +28,16 @@ namespace Common.Tests.ISummaryService
         {
             // arrange
             var transactions = new List<Transaction>();
+            var household = GetHouseholdWith2Users();
             _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .ReturnsAsync(transactions);
+            _householdRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(household);
 
             // act
             var sut = new SummaryService(_transactionRepo.Object, _subcetgoryRepo.Object, _householdRepo.Object);
 
             // assert
-            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyTransactionsByMonthAndHouseholdId("2024-12", Household1Id, User21));
+            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetMonthlyTransactionsByMonthAndHouseholdId("2024-12", Household1Id, User2Hh1Id));
         }
 
         [Test]
@@ -53,7 +55,7 @@ namespace Common.Tests.ISummaryService
 
             // act
             var sut = new SummaryService(_transactionRepo.Object, _subcetgoryRepo.Object, _householdRepo.Object);
-            var result = await sut.GetMonthlyTransactionsByMonthAndHouseholdId("2024-12", Household1Id, User11);
+            var result = await sut.GetMonthlyTransactionsByMonthAndHouseholdId("2024-12", Household1Id, User1Hh1Id);
 
             // assert
             Assert.That(result, Is.Not.Null);
@@ -78,7 +80,7 @@ namespace Common.Tests.ISummaryService
 
             // act
             var sut = new SummaryService(_transactionRepo.Object, _subcetgoryRepo.Object, _householdRepo.Object);
-            var result = await sut.GetMonthlyTransactionsByMonthAndHouseholdId(financialMonth, Household1Id, User11);
+            var result = await sut.GetMonthlyTransactionsByMonthAndHouseholdId(financialMonth, Household1Id, User1Hh1Id);
 
             // assert
             Assert.That(result, Is.Not.Null);
