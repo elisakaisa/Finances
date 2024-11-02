@@ -4,6 +4,7 @@ using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Tests.TestData;
 using Common.Utils.Exceptions;
+using Common.Utils.Extensions;
 using Moq;
 
 namespace Common.Tests.ITransactionService
@@ -39,11 +40,10 @@ namespace Common.Tests.ITransactionService
         {
             // Arrange
             var oldTransaction = CreateTransaction(123m, TransactionType.Income, SplitType.Individual,
-                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
-                                                   category: Income, subcategory: IncomeMisc);
+                                                   subcategoryId: IncomeMisc.Id,
+                                                   subcategory: IncomeMisc);
             var updatedTransaction = CreateTransaction(1000m, TransactionType.Income, SplitType.Individual,
-                                                   categoryId: Income.Id, subcategoryId: IncomeMisc.Id,
-                                                   category: Income, subcategory: IncomeMisc);
+                                                   subcategoryId: IncomeMisc.Id, subcategory: IncomeMisc);
 
             _subcategoryRepository.Setup(r => r.GetSubcategoryByCategoryIdAsync(It.IsAny<int>()))
                 .ReturnsAsync(GeneralTestData.Income.Subcategories);
@@ -52,7 +52,7 @@ namespace Common.Tests.ITransactionService
 
             // Act
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
-            var result = await sut.UpdateAsync(updatedTransaction, User1Hh1Id);
+            var result = await sut.UpdateAsync(updatedTransaction.ConvertToDto(), User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -77,7 +77,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction, User1Hh1Id));
+            Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction.ConvertToDto(), User1Hh1Id));
         }
     }
 }

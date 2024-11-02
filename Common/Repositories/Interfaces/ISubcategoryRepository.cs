@@ -6,5 +6,6 @@ namespace Common.Repositories.Interfaces
     {
         Task<ICollection<Subcategory>> GetAllAsync();
         Task<ICollection<Subcategory>> GetSubcategoryByCategoryIdAsync(int categoryId);
+        Task<Subcategory> GetSubcategoryByName(string name);
     }
 }

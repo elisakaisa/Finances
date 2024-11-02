@@ -1,4 +1,4 @@
-using Common.Model.DatabaseObjects;
+using Common.Model.Dtos;
 using Common.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -9,11 +9,6 @@ namespace API.Controllers
     [Route("[controller]")]
     public class TransactionController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<TransactionController> _logger;
         private readonly ITransactionService _transactionService;
 
@@ -23,20 +18,8 @@ namespace API.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
-        {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
-        }
-
         [HttpPost(Name = "CreateTransaction")]
-        public async Task<IActionResult> CreateTransaction([FromBody] Transaction transaction, [FromHeader] Guid userId)
+        public async Task<IActionResult> CreateTransaction([FromBody] TransactionDto transaction, [FromHeader] Guid userId)
         {
             if (transaction == null || userId == Guid.Empty)
             {

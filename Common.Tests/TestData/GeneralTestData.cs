@@ -138,9 +138,7 @@ namespace Common.Tests.TestData
             User user = null,
             string financialMonth = "202412",
             decimal? userShare = null,
-            int? categoryId = null,
             int? subcategoryId = null,
-            Category? category = null,
             Subcategory? subcategory = null) => new()
             {
                 Id = Guid.NewGuid(),

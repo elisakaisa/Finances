@@ -1,4 +1,5 @@
 ﻿using Common.Model.DatabaseObjects;
+using Common.Model.Dtos;
 using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
@@ -28,10 +29,15 @@ namespace Common.Services
         /// <param name="transaction">The values of the new transaction</param>
         /// <param name="user">The user creating the transaction</param>
         /// <returns>The created transaction</returns>
-        public async Task<Transaction> CreateAsync(Transaction transaction, Guid requestingUser)
+        public async Task<Transaction> CreateAsync(TransactionDto transactionDto, Guid requestingUser)
         {
-            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
-            await ValidateTransactionData(transaction);
+            var user = await _userRepository.GetByIdAsync(transactionDto.UserId);
+            await ValidateThatUserIsInHousehold(requestingUser, user.HouseholdId);
+            ValidateTransactionData(transactionDto);
+
+            var subcategory = await _subcategoryRepository.GetSubcategoryByName(transactionDto.SubcategoryName);
+            ValidateTransactionCategory(transactionDto, subcategory);
+            var transaction = ConvertDto(transactionDto, user, subcategory);
 
             var createdTransaction = await _transactionRepository.CreateAsync(transaction);
             return createdTransaction;
@@ -83,10 +89,15 @@ namespace Common.Services
             return transactions;
         }
 
-        public async Task<Transaction> UpdateAsync(Transaction transaction, Guid requestingUser)
+        public async Task<Transaction> UpdateAsync(TransactionDto transactionDto, Guid requestingUser)
         {
-            await ValidateThatUserIsInHousehold(requestingUser, transaction.User.HouseholdId);
-            await ValidateTransactionData(transaction);
+            var user = await _userRepository.GetByIdAsync(transactionDto.UserId);
+            await ValidateThatUserIsInHousehold(requestingUser, user.HouseholdId);
+            ValidateTransactionData(transactionDto);
+
+            var subcategory = await _subcategoryRepository.GetSubcategoryByName(transactionDto.SubcategoryName);
+            ValidateTransactionCategory(transactionDto, subcategory);
+            var transaction = ConvertDto(transactionDto, user, subcategory);
 
             var updatedTransaction = await _transactionRepository.UpdateAsync(transaction);
             return updatedTransaction;
@@ -102,35 +113,71 @@ namespace Common.Services
 
         }
 
-
-
-        private async Task ValidateTransactionData(Transaction transaction)
+        private async Task ValidateThatUserIsInHousehold(Guid requestingUserId, User user)
         {
-            if (!MandatoryFieldsAreFilled(transaction) || !UserShareHasValidValues(transaction))
+            var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
+            if (requestingUser.HouseholdId != user.HouseholdId)
+            {
+                throw new UserNotInHouseholdException();
+            }
+
+        }
+
+        private Transaction ConvertDto(TransactionDto transactionDto, User user, Subcategory subcategory)
+        {
+            return new Transaction
+            {
+                Id = transactionDto.Id,
+                Description = transactionDto.Description,
+                Date = transactionDto.Date,
+                FromOrTo = transactionDto.FromOrTo,
+                Location = transactionDto.Location,
+                ExcludeFromSummary = transactionDto.ExcludeFromSummary,
+                TransactionType = transactionDto.TransactionType,
+                SplitType = transactionDto.SplitType,
+                UserShare = transactionDto.UserShare,
+                Amount = transactionDto.Amount,
+                ToVerify = transactionDto.ToVerify,
+                ModeOfPayment = transactionDto.ModeOfPayment,
+                FinancialMonth = transactionDto.FinancialMonth,
+                SubcategoryId = 122222222,
+                UserId = user.Id,
+                User = user
+            };
+        }
+
+
+
+        private void ValidateTransactionData(TransactionDto transactionDto)
+        {
+            if (!MandatoryFieldsAreFilled(transactionDto) || !UserShareHasValidValues(transactionDto))
             {
                 throw new MissingOrWrongTransactionDataException("Mandatory fields are not filled");
             }
 
-            if (!transaction.FinancialMonth.IsFinancialMonthOfCorrectFormat())
+            if (!transactionDto.FinancialMonth.IsFinancialMonthOfCorrectFormat())
             {
                 throw new FinancialMonthOfWrongFormatException();
             }
 
-            if (transaction.TransactionType == TransactionType.Income && transaction.SplitType != SplitType.Individual)
+            if (transactionDto.TransactionType == TransactionType.Income && transactionDto.SplitType != SplitType.Individual)
             {
                 throw new MissingOrWrongTransactionDataException("Income can only be an individual expense");
             }
+        }
 
-            if (transaction.TransactionType != transaction.Subcategory.Category.TransactionType)
+        private void ValidateTransactionCategory(TransactionDto transactionDto, Subcategory subcategory)
+        {
+            if (transactionDto.TransactionType != subcategory.Category.TransactionType)
             {
                 throw new MissingOrWrongTransactionDataException("Category is of the wrong transaction type");
             }
 
-            var subcategoriesInCategory = await _subcategoryRepository.GetSubcategoryByCategoryIdAsync(transaction.Subcategory.CategoryId);
-            if (!IsSubcategoryInCategory(subcategoriesInCategory, transaction.SubcategoryId))
-            {
-                throw new SubcategoryNotContainedInCategoryException();
-            }
+            //var subcategoriesInCategory = await _subcategoryRepository.GetSubcategoryByCategoryIdAsync(transactionDto.Subcategory.CategoryId);
+            //if (!IsSubcategoryInCategory(subcategoriesInCategory, transactionDto.SubcategoryId))
+            //{
+            //    throw new SubcategoryNotContainedInCategoryException();
+            //}
         }
 
 
@@ -142,17 +189,15 @@ namespace Common.Services
             }
         }
 
-        private static bool MandatoryFieldsAreFilled(Transaction transaction)
+        private static bool MandatoryFieldsAreFilled(TransactionDto transaction)
         {
             return transaction.Id != Guid.Empty
                 && transaction.Description != string.Empty
                 && transaction.Amount != 0
-                && transaction.Subcategory.CategoryId != 0
-                && transaction.SubcategoryId != 0
                 && transaction.UserId != Guid.Empty;
         }
 
-        private static bool UserShareHasValidValues(Transaction transaction)
+        private static bool UserShareHasValidValues(TransactionDto transaction)
         {
             if (transaction.SplitType == SplitType.Custom && transaction.UserShare == null) return false;
             else if (transaction.SplitType == SplitType.Custom && (transaction.UserShare < 0 || transaction.UserShare > 1)) return false;

@@ -49,5 +49,15 @@ namespace Common.Repositories
                 .ToListAsync();
             return subcategories;
         }
+
+        public async Task<Subcategory> GetSubcategoryByName(string name)
+        {
+            var category = await _dbContext.Subcategories
+                .AsNoTracking()
+                .Include(s => s.Category)
+                .Where(s => s.Name == name)
+                .FirstOrDefaultAsync();
+            return category;
+        }
     }
 }
