@@ -16,6 +16,9 @@ namespace Common.Repositories
 
         public async Task<Transaction> CreateAsync(Transaction entity)
         {
+            _dbContext.Users.Attach(entity.User);
+            _dbContext.Subcategories.Attach(entity.Subcategory);
+
             await _dbContext.Transactions.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             //TODO: double check how this is done
@@ -102,6 +105,9 @@ namespace Common.Repositories
 
         public async Task<Transaction> UpdateAsync(Transaction entity)
         {
+            _dbContext.Users.Attach(entity.User);
+            _dbContext.Subcategories.Attach(entity.Subcategory);
+
             _dbContext.Transactions.Update(entity);
             await _dbContext.SaveChangesAsync();
             return entity;

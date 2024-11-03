@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
         private readonly ILogger<TransactionController> _logger;
@@ -45,7 +45,7 @@ namespace API.Controllers
             {
                 return BadRequest("Financial month of wrong format exception");
             }
-            catch (MissingOrWrongTransactionDataException)
+            catch (MissingOrWrongDataException)
             {
                 return BadRequest("Missing data");
             }
@@ -91,7 +91,7 @@ namespace API.Controllers
             {
                 return BadRequest("Financial month of wrong format exception");
             }
-            catch (MissingOrWrongTransactionDataException)
+            catch (MissingOrWrongDataException)
             {
                 return BadRequest("Missing data");
             }

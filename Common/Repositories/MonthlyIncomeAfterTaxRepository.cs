@@ -15,6 +15,8 @@ namespace Common.Repositories
         }
         public async Task<MonthlyIncomeAfterTax> CreateAsync(MonthlyIncomeAfterTax entity)
         {
+            _dbContext.Users.Attach(entity.User);
+
             await _dbContext.MonthlyIncomesAfterTax.AddAsync(entity);
             await _dbContext.SaveChangesAsync();
             return entity;
@@ -63,6 +65,8 @@ namespace Common.Repositories
 
         public async Task<MonthlyIncomeAfterTax> UpdateAsync(MonthlyIncomeAfterTax entity)
         {
+            _dbContext.Users.Attach(entity.User);
+
             _dbContext.MonthlyIncomesAfterTax.Update(entity);
             await _dbContext.SaveChangesAsync();
             return entity;

@@ -142,7 +142,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
 
         [Test]
@@ -155,7 +155,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
         }
 
         [TestCase(-0.2)]
@@ -169,7 +169,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
         }
 
         [TestCase(SplitType.IncomeBased)]
@@ -184,7 +184,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
         }
 
         [Test]
@@ -198,7 +198,7 @@ namespace Common.Tests.ITransactionService
             var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
 
             // Assert
-            Assert.ThrowsAsync<MissingOrWrongTransactionDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction.ConvertToDto(), User1Hh1Id));
         }
 
         //TODO: decide later what validation is wanted

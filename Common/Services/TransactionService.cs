@@ -133,7 +133,7 @@ namespace Common.Services
         {
             if (!MandatoryFieldsAreFilled(transactionDto) || !UserShareHasValidValues(transactionDto))
             {
-                throw new MissingOrWrongTransactionDataException("Mandatory fields are not filled");
+                throw new MissingOrWrongDataException("Mandatory fields are not filled");
             }
 
             if (!transactionDto.FinancialMonth.IsFinancialMonthOfCorrectFormat())
@@ -143,7 +143,7 @@ namespace Common.Services
 
             if (transactionDto.TransactionType == TransactionType.Income && transactionDto.SplitType != SplitType.Individual)
             {
-                throw new MissingOrWrongTransactionDataException("Income can only be an individual expense");
+                throw new MissingOrWrongDataException("Income can only be an individual expense");
             }
         }
 
@@ -151,7 +151,7 @@ namespace Common.Services
         {
             if (transactionDto.TransactionType != subcategory.Category.TransactionType)
             {
-                throw new MissingOrWrongTransactionDataException("Category is of the wrong transaction type");
+                throw new MissingOrWrongDataException("Category is of the wrong transaction type");
             }
 
             // TODO figure out if this is still needed

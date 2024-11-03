@@ -56,5 +56,28 @@ namespace Common.Utils.Extensions
                 User = user
             };
         }
+
+        public static MonthlyIncomeAfterTaxDto ConvertToDto(this MonthlyIncomeAfterTax monthlyIncomeAfterTax)
+        {
+            return new MonthlyIncomeAfterTaxDto
+            {
+                Id = monthlyIncomeAfterTax.Id,
+                IncomeAfterTax = monthlyIncomeAfterTax.IncomeAfterTax,
+                FinancialMonth = monthlyIncomeAfterTax.FinancialMonth,
+                UserId = monthlyIncomeAfterTax.UserId
+            };
+        }
+
+        public static MonthlyIncomeAfterTax ConvertToDbObject(this MonthlyIncomeAfterTaxDto monthlyIncomeAfterTaxDto, User user)
+        {
+            return new MonthlyIncomeAfterTax
+            {
+                Id = monthlyIncomeAfterTaxDto.Id,
+                IncomeAfterTax = monthlyIncomeAfterTaxDto.IncomeAfterTax,
+                FinancialMonth = monthlyIncomeAfterTaxDto.FinancialMonth,
+                UserId = monthlyIncomeAfterTaxDto.UserId,
+                User = user
+            };
+        }
     }
 }
