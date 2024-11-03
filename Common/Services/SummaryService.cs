@@ -58,7 +58,6 @@ namespace Common.Services
             {
                 throw new UserNotInHouseholdException();
             }
-
         }
 
 
@@ -72,7 +71,7 @@ namespace Common.Services
         private static HouseholdLevelMonthlySummary CalculateHouseholdSummaryForSubcategory(Subcategory subcategory, ICollection<Transaction> transactions, Household household, string financialMonth)
         {
             var userLevelMonthlySummaries = household.Users
-                .Select(user => CalculateUserSummary(transactions, user, subcategory))
+                .Select(user => CalculateUserSummaryForSubcategory(transactions, user, subcategory))
                 .ToList();
 
             var totalSum = userLevelMonthlySummaries.Sum(summary => summary.Total);
@@ -83,26 +82,27 @@ namespace Common.Services
                 FinancialMonth = financialMonth,
                 Year = int.Parse(financialMonth[..4]),
                 TransactionType = subcategory.TransactionType,
-                Subcategory = subcategory,
+                SubcategoryName = subcategory.Name,
+                CategoryName = subcategory.Category.Name,
                 Total = totalSum,
                 CommonTotal = commonHouseholdSum,
                 UserLevelMonthlySummary = userLevelMonthlySummaries,
-                Household = household
+                HouseholdId = household.Id
             };
         }
 
-        private static UserLevelMonthlySummary CalculateUserSummary(ICollection<Transaction> transactions, User user,  Subcategory subcategory)
+        private static UserLevelMonthlySummary CalculateUserSummaryForSubcategory(ICollection<Transaction> transactions, User user,  Subcategory subcategory)
         {
-            var userTransactions = transactions.Where(t => t.UserId == user.Id && t.Subcategory == subcategory);
-            var individualTotal = userTransactions.Where(t => t.SplitType == SplitType.Individual).Sum(t => t.Amount);
-            var commonTotal = userTransactions.Where(t => t.SplitType != SplitType.Individual).Sum(t => t.Amount);
+            var userTransactionsBySubcategory = transactions.Where(t => t.UserId == user.Id && t.SubcategoryId == subcategory.Id);
+            var individualTotal = userTransactionsBySubcategory.Where(t => t.SplitType == SplitType.Individual).Sum(t => t.Amount);
+            var commonTotal = userTransactionsBySubcategory.Where(t => t.SplitType != SplitType.Individual).Sum(t => t.Amount);
 
             return new UserLevelMonthlySummary
             {
                 CommonTotal = commonTotal,
                 IndividualTotal = individualTotal,
                 Total = commonTotal + individualTotal,
-                User = user
+                UserId = user.Id
             };
         }
     }
