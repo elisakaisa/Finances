@@ -105,7 +105,7 @@ namespace API.Controllers
         [HttpGet("household/{householdId}/monthly-transactions")]
         public async Task<IActionResult> GetMonthlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || financialMonth == null || financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (householdId == Guid.Empty || financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
                 return BadRequest("Household ID, financial month, and requesting user ID are required.");
             }
@@ -133,7 +133,7 @@ namespace API.Controllers
         [HttpGet("household/{householdId}/yearly-transactions")]
         public async Task<IActionResult> GetYearlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (householdId == Guid.Empty || !year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
                 return BadRequest("Household ID, valid year, and requesting user ID are required.");
             }

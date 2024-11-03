@@ -7,7 +7,7 @@ namespace Common.Repositories
 {
     public class HouseholdRepository : IHouseholdRepository
     {
-        public readonly FinancesDbContext _dbContext;
+        private readonly FinancesDbContext _dbContext;
 
         public HouseholdRepository(FinancesDbContext dbContext)
         {

@@ -95,11 +95,11 @@ namespace Common.Services
         {
             var user1 = household.Users.First();
 
-            var singleUser = household.Users.ToDictionary(user => user.Id, user => user);
+            var singleUser = household.Users.ToDictionary(user => user.Id, user => user.Name);
 
             var incomeUser = singleUser.ToDictionary(
                 user => user.Key,
-                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Value.Id));
+                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Key));
 
             var householdIncome = incomeUser.Values.Sum();
             var userSharesOfHouseholdIncome = CalculateHouseholdIncomeShares(incomeUser, householdIncome);
@@ -109,8 +109,8 @@ namespace Common.Services
 
             Repartition repartition = new()
             {
-                Household = household,
-                Users = singleUser,
+                HouseholdId = household.Id,
+                UserName = singleUser,
                 MonthYear = monthYear,
                 IncomeAfterTax = incomeUser,
                 UserSharesOfHouseholdIncome = userSharesOfHouseholdIncome,
@@ -136,11 +136,11 @@ namespace Common.Services
             var user1 = household.Users.First();
             var user2 = household.Users.Last();
 
-            var users = household.Users.ToDictionary(user => user.Id, user => user);
+            var users = household.Users.ToDictionary(user => user.Id, user => user.Name);
 
             var incomeUser = users.ToDictionary(
                 user => user.Key, 
-                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Value.Id));
+                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Key));
 
             var householdIncome = incomeUser.Values.Sum();
             var userSharesOfHouseholdIncome = CalculateHouseholdIncomeShares(incomeUser, householdIncome);
@@ -152,8 +152,8 @@ namespace Common.Services
 
             Repartition repartition = new()
             {
-                Household = household,
-                Users = users,
+                HouseholdId = household.Id,
+                UserName = users,
                 MonthYear = monthYear,
                 IncomeAfterTax = incomeUser,
                 UserSharesOfHouseholdIncome = userSharesOfHouseholdIncome,
@@ -220,10 +220,12 @@ namespace Common.Services
 
         private static Repartition RoundRepartitionSums(Repartition repartition)
         {
-            foreach (var userId in repartition.Users.Keys.ToList())
+            foreach (var userId in repartition.UserName.Keys.ToList())
             {
                 repartition.TotalCommonExpensesPaidByUser[userId] = Math.Round(repartition.TotalCommonExpensesPaidByUser[userId], 3);
                 repartition.UserShouldPay[userId] = Math.Round(repartition.UserShouldPay[userId], 3);
+                repartition.TargetUserShare[userId] = Math.Round(repartition.TargetUserShare[userId], 3);
+                repartition.ActualUserShare[userId] = Math.Round(repartition.ActualUserShare[userId], 3);
             }
             return repartition;
         }
