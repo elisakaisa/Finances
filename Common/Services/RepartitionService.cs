@@ -26,6 +26,7 @@ namespace Common.Services
 
         public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, Guid requestingUserGuid)
         {
+            //TODO: should add check that financioalMonth has correct format
             var household = await _householdRepository.GetByIdAsync(householdId);
             ValidateThatUserIsInHousehold(requestingUserGuid, household);
 
