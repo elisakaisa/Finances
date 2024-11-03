@@ -13,5 +13,10 @@ namespace Common.Utils.Extensions
             DateTimeStyles.None,
             out _);
         }
+
+        public static bool IsYearOfCorrectFormat(this int year)
+        {
+            return year >= 1 && year <= 9999;
+        }
     }
 }

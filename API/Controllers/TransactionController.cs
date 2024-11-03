@@ -3,7 +3,6 @@ using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
 {
@@ -20,7 +19,7 @@ namespace API.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpPost(Name = "CreateTransaction")]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionDto transaction, [FromHeader] Guid userId)
         {
             if (transaction == null || userId == Guid.Empty)
@@ -31,19 +30,74 @@ namespace API.Controllers
             try
             {
                 var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
-                return CreatedAtAction(nameof(GetTransactionById), new { id = createdTransaction.Id }, createdTransaction);
+                //return CreatedAtAction(nameof(GetTransactionById), new { id = createdTransaction.Id }, createdTransaction);
+                return Ok(createdTransaction);
             }
             catch (UnauthorizedAccessException ex)
             {
                 return Forbid(ex.Message);
             }
-            catch (ValidationException ex)
+            catch (UserNotInHouseholdException)
             {
-                return BadRequest(ex.Message);
+                return Forbid("User is not authorized to view transactions for this household.");
             }
-            catch (Exception ex)
+            catch (FinancialMonthOfWrongFormatException)
+            {
+                return BadRequest("Financial month of wrong format exception");
+            }
+            catch (MissingOrWrongTransactionDataException)
+            {
+                return BadRequest("Missing data");
+            }
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while creating the transaction.");
+            }
+        }
+
+
+        [HttpPut("update/{id:guid}")]
+        public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] TransactionDto transactionDto)
+        {
+            if (transactionDto == null || id != transactionDto.Id)
+            {
+                return BadRequest("Transaction data is invalid or ID does not match.");
+            }
+
+            try
+            {
+                // TODO: do I want to retrieve user ID from autheticated user context?
+                // probs this kind of thing used if using 3rd party provider
+                var requestingUserId = Guid.Parse(User.FindFirst("userId")?.Value ?? string.Empty);
+
+                var updatedTransaction = await _transactionService.UpdateAsync(transactionDto, requestingUserId);
+
+                if (updatedTransaction == null)
+                {
+                    return NotFound("Transaction not found.");
+                }
+
+                return Ok(updatedTransaction);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid("You are not authorized to update this transaction.");
+            }
+            catch (UserNotInHouseholdException)
+            {
+                return Forbid("User is not authorized to view transactions for this household.");
+            }
+            catch (FinancialMonthOfWrongFormatException)
+            {
+                return BadRequest("Financial month of wrong format exception");
+            }
+            catch (MissingOrWrongTransactionDataException)
+            {
+                return BadRequest("Missing data");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating the transaction.");
             }
         }
 
@@ -69,25 +123,49 @@ namespace API.Controllers
             {
                 return BadRequest("Financial month of wrong format exception");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "An error occurred while retrieving transactions.");
             }
         }
 
-        // TODO: fix this
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTransactionById(Guid id)
-        {
-            //var transaction = await _transactionService.GetByIdAsync(id);
-            //Transaction transaction = null;
-            //if (transaction == null)
-            //{
-            //    return NotFound();
-            //}
 
-            //return Ok(transaction);
-            return Ok();
+        [HttpGet("household/{householdId}/yearly-transactions")]
+        public async Task<IActionResult> GetYearlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] int year, [FromHeader] Guid requestingUserId)
+        {
+            if (householdId == Guid.Empty || year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
+            {
+                return BadRequest("Household ID, valid year, and requesting user ID are required.");
+            }
+
+            try
+            {
+                var transactions = await _transactionService.GetYearlyTransactionsByHouseholdId(householdId, year, requestingUserId);
+                return Ok(transactions);
+            }
+            catch (UserNotInHouseholdException)
+            {
+                return Forbid("User is not authorized to view transactions for this household.");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving transactions.");
+            }
         }
+
+        // TODO: fix this?
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetTransactionById(Guid id)
+        //{
+        //    //var transaction = await _transactionService.GetByIdAsync(id);
+        //    //Transaction transaction = null;
+        //    //if (transaction == null)
+        //    //{
+        //    //    return NotFound();
+        //    //}
+
+        //    //return Ok(transaction);
+        //    return Ok();
+        //}
     }
 }
