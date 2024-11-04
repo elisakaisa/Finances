@@ -4,6 +4,7 @@ using Common.Model.Dtos;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
+using Common.Utils.Extensions;
 
 namespace Common.Services
 {
@@ -22,6 +23,7 @@ namespace Common.Services
 
         public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid householdId, Guid requestingUser)
         {
+            ValidateFinancialMonth(financialMonth);
             var household = await _householdRepository.GetByIdAsync(householdId);
             ValidateThatUserIsInHousehold(requestingUser, household);
 
@@ -57,6 +59,14 @@ namespace Common.Services
             if (!userIsInHousehold)
             {
                 throw new UserNotInHouseholdException();
+            }
+        }
+
+        private void ValidateFinancialMonth(string financialMonth)
+        {
+            if (!financialMonth.IsFinancialMonthOfCorrectFormat())
+            {
+                throw new FinancialMonthOfWrongFormatException();
             }
         }
 
