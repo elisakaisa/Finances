@@ -11,7 +11,7 @@ namespace Common.Tests.TestData
             {
                 Id = Household1Id,
                 Name = "Household10",
-                Users = [new User() { Id = User1Hh1Id, Name = "user1" }]
+                Users = [User11]
             };
         }
 
@@ -21,7 +21,7 @@ namespace Common.Tests.TestData
             {
                 Id = Household1Id,
                 Name = "Household10",
-                Users = [new User() { Id = User1Hh1Id, Name = "user1" }, new User() { Id = User2Hh1Id, Name = "user2" }]
+                Users = [User11, User12]
             };
         }
 
@@ -31,7 +31,7 @@ namespace Common.Tests.TestData
             {
                 Id = Household1Id,
                 Name = "Household10",
-                Users = [new User() { Id = User1Hh1Id, Name = "user1" }, new User() { Id = User2Hh1Id, Name = "user2" }, new User() { Id = User1Hh1Id, Name = "user3" }]
+                Users = [User11, User12, User11]
             };
         }
 

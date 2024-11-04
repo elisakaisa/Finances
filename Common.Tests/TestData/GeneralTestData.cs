@@ -11,13 +11,13 @@ namespace Common.Tests.TestData
         public static readonly Guid User1Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000011");
         public static readonly Guid User2Hh1Id = Guid.Parse("00000000-0000-0000-0000-000000000012");
 
-        public Household Household10 = new()
+        public static Household Household10 = new()
         {
             Id = Household1Id,
             Name = "Household10"
         };
 
-        public Household Household20 = new()
+        public static Household Household20 = new()
         {
             Id = Household2Id,
             Name = "Household20"
@@ -29,14 +29,16 @@ namespace Common.Tests.TestData
         {
             Id = User1Hh1Id,
             Name = "User11",
-            HouseholdId = Household1Id
+            HouseholdId = Household1Id,
+            Household = Household10 // TODO init these values in method
         };
 
         public static User User12 = new()
         {
             Id = User2Hh1Id,
             Name = "User12",
-            HouseholdId = Household1Id
+            HouseholdId = Household1Id,
+            Household = Household10
         };
 
 
@@ -45,14 +47,16 @@ namespace Common.Tests.TestData
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000021"),
             Name = "User21",
-            HouseholdId = Household2Id
+            HouseholdId = Household2Id,
+            Household = Household20
         };
 
         public static User User22 = new()
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000022"),
             Name = "User22",
-            HouseholdId = Household2Id
+            HouseholdId = Household2Id,
+            Household = Household20
         };
 
 
@@ -70,7 +74,8 @@ namespace Common.Tests.TestData
             Id = 11,
             Name = "Salary",
             CategoryId = 1,
-            State = State.Active
+            State = State.Active,
+            Category = new Category { Name = "test"}
         };
 
         public static Subcategory IncomeMisc = new()
@@ -78,7 +83,8 @@ namespace Common.Tests.TestData
             Id = 12,
             Name = "IncomeMisc",
             CategoryId = 1,
-            State = State.Active
+            State = State.Active,
+            Category = new Category { Name = "test" }
         };
 
 
@@ -97,7 +103,7 @@ namespace Common.Tests.TestData
             Name = "Electricity",
             CategoryId = 2,
             State = State.Active,
-            Category = Utilities
+            Category = Utilities,
         };
 
         public static Subcategory HomeInsurance = new()
@@ -106,7 +112,7 @@ namespace Common.Tests.TestData
             Name = "HomeInsurance",
             CategoryId = 2,
             State = State.Active,
-            Category = Utilities
+            Category = Utilities,
         };
 
         protected static void InitializeSubcategories()
@@ -135,7 +141,7 @@ namespace Common.Tests.TestData
             TransactionType type,
             SplitType splitType = SplitType.Even,
             Guid? userId = null,
-            User user = null,
+            User? user = null,
             string financialMonth = "202412",
             decimal? userShare = null,
             int? subcategoryId = null,
@@ -154,11 +160,14 @@ namespace Common.Tests.TestData
                 Subcategory = subcategory ?? new Subcategory
                 {
                     Name = "test",
+                    Category = new Category { Name = "test" }
                 }
             };
 
         protected MonthlyIncomeAfterTax CreateMonthlyIncome(decimal income, Guid userId, User user) => new()
         {
+            Id = Guid.NewGuid(),
+            FinancialMonth = "202412",
             IncomeAfterTax = income,
             UserId = userId,
             User = user

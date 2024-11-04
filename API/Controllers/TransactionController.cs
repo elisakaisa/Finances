@@ -30,7 +30,6 @@ namespace API.Controllers
             try
             {
                 var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
-                //return CreatedAtAction(nameof(GetTransactionById), new { id = createdTransaction.Id }, createdTransaction);
                 return Ok(createdTransaction);
             }
             catch (UnauthorizedAccessException ex)
@@ -51,7 +50,7 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, "An error occurred while creating the transaction.");
+                return StatusCode(500, "Something went wrong.");
             }
         }
 
@@ -97,7 +96,43 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, "An error occurred while updating the transaction.");
+                return StatusCode(500, "Something went wrong.");
+            }
+        }
+
+        [HttpDelete]
+        [Route("delete")]
+        public async Task<IActionResult> DeleteTransaction([FromBody] TransactionDto transactionDto, [FromQuery] Guid requestingUserId)
+        {
+            if (transactionDto == null || requestingUserId == Guid.Empty)
+            {
+                return BadRequest("Transaction data is required.");
+            }
+
+            try
+            {
+                bool result = await _transactionService.DeleteAsync(transactionDto, requestingUserId);
+
+                if (result)
+                {
+                    return Ok(new { success = true, message = "Transaction deleted successfully." });
+                }
+                else
+                {
+                    return NotFound(new { success = false, message = "Transaction not found or could not be deleted." });
+                }
+            }
+            catch (UserNotInHouseholdException)
+            {
+                return Forbid("User is not authorized to view transactions for this household.");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid("User is not authorized to delete this transaction.");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Something went wrong.");
             }
         }
 
@@ -125,7 +160,7 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, "An error occurred while retrieving transactions.");
+                return StatusCode(500, "Something went wrong.");
             }
         }
 
@@ -149,23 +184,8 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, "An error occurred while retrieving transactions.");
+                return StatusCode(500, "Something went wrong.");
             }
         }
-
-        // TODO: fix this?
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetTransactionById(Guid id)
-        //{
-        //    //var transaction = await _transactionService.GetByIdAsync(id);
-        //    //Transaction transaction = null;
-        //    //if (transaction == null)
-        //    //{
-        //    //    return NotFound();
-        //    //}
-
-        //    //return Ok(transaction);
-        //    return Ok();
-        //}
     }
 }

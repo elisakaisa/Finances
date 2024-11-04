@@ -39,9 +39,9 @@ namespace API.Controllers
             {
                 return Forbid("User is not authorized to view transactions for this household.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, "Something went wrong.");
             }
         }
 
@@ -82,7 +82,7 @@ namespace API.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(500, "An error occurred while updating the transaction.");
+                return StatusCode(500, "Something went wrong.");
             }
         }
     }

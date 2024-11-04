@@ -24,9 +24,10 @@ namespace Common.Services
             _householdRepository = householdRepo;
         }
 
-        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string monthYear, Guid requestingUserGuid)
+        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string financialMonth, Guid requestingUserGuid)
         {
-            //TODO: should add check that financioalMonth has correct format
+            ValidateFinancialMonthFormat(financialMonth);
+
             var household = await _householdRepository.GetByIdAsync(householdId);
             ValidateThatUserIsInHousehold(requestingUserGuid, household);
 
@@ -35,15 +36,15 @@ namespace Common.Services
                 throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
             }
 
-            var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, monthYear);
-            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(householdId, monthYear);
+            var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
+            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(householdId, financialMonth);
 
             if (household.Users.Count == 1)
             {
-                return CalculateMonthlyRepartitionForSingleUserHousehold(household, monthlyIncomeAfterTax, householdTransactions, monthYear);
+                return CalculateMonthlyRepartitionForSingleUserHousehold(household, monthlyIncomeAfterTax, householdTransactions, financialMonth);
             }
 
-            return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, monthYear);
+            return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, financialMonth);
         }
 
         public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, Guid requestingUser)
@@ -62,6 +63,14 @@ namespace Common.Services
             }
 
             return await CalculateYearlyRepartition(household, year);
+        }
+
+        private static void ValidateFinancialMonthFormat(string financialMonth)
+        {
+            if (!financialMonth.IsFinancialMonthOfCorrectFormat())
+            {
+                throw new FinancialMonthOfWrongFormatException();
+            }
         }
 
         private static void ValidateThatUserIsInHousehold(Guid requestingUserId, Household household)
@@ -200,7 +209,7 @@ namespace Common.Services
                         repartition.UserShouldPay[user2Id] += transaction.Amount * repartition.UserSharesOfHouseholdIncome[user2Id];
                         break;
                     case SplitType.Custom:
-                        var userShare = (decimal)transaction.UserShare;
+                        var userShare = transaction.UserShare != null ? (decimal)transaction.UserShare : 0.5m;
                         var user1Share = transaction.UserId == user1Id ? userShare : (1 - userShare);
                         var user2Share = 1 - userShare;
                         repartition.UserShouldPay[user1Id] += transaction.Amount * user1Share;

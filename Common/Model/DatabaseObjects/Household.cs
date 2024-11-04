@@ -2,8 +2,8 @@
 {
     public class Household
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
+        public required Guid Id { get; set; }
+        public required string Name { get; set; }
 
         // Navigation properties
         public ICollection<User> Users { get; set; }

@@ -2,7 +2,7 @@
 {
     public class User
     {
-        public Guid Id { get; set; }
+        public required Guid Id { get; set; }
         public required string Name { get; set; }
 
         //FK
@@ -12,6 +12,6 @@
         public ICollection<Transaction> Transactions { get; set; }
         public ICollection<MonthlyIncomeAfterTax> MonthlyIncomesAfterTax { get; set; }
 
-        public Household Household { get; set; }
+        public required Household Household { get; set; }
     }
 }

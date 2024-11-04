@@ -32,6 +32,9 @@ namespace Common.Repositories
 
         public async Task<bool> DeleteAsync(Transaction entity)
         {
+            _dbContext.Users.Attach(entity.User);
+            _dbContext.Subcategories.Attach(entity.Subcategory);
+
             _dbContext.Transactions.Remove(entity);
             var result = await _dbContext.SaveChangesAsync();
             return result > 0;

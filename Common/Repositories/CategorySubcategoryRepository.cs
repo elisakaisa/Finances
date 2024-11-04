@@ -25,7 +25,7 @@ namespace Common.Repositories
         {
             var categories = await _dbContext.Categories
                 .AsNoTracking()
-                .Include(c => c.Subcategories) //TODO: figure this out
+                .Include(c => c.Subcategories) 
                 .Where(c => c.TransactionType == type)
                 .ToListAsync();
             return categories;
@@ -57,7 +57,7 @@ namespace Common.Repositories
                 .Include(s => s.Category)
                 .Where(s => s.Name == name)
                 .FirstOrDefaultAsync();
-            return category;
+            return category ?? throw new KeyNotFoundException();
         }
     }
 }
