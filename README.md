@@ -1,3 +1,5 @@
+![CI](https://github.com/elisakaisa/Finances/actions/workflows/dotnet.yml/badge.svg)
+
 # Finances
 App (first an API, then maybe I'll add a frontend) to keep track of expenses. 
 Logic is based on the spreadsheet I've made that me and my partner have been using to keep track of our expenses and to split them accordingly.
