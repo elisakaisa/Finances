@@ -1,6 +1,4 @@
-﻿using Common.Model.DatabaseObjects;
-
-namespace Common.Model.Dtos
+﻿namespace Common.Model.Dtos
 {
     public class Repartition
     {

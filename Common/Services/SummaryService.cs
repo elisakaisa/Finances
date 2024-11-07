@@ -91,7 +91,7 @@ namespace Common.Services
             {
                 FinancialMonth = financialMonth,
                 Year = int.Parse(financialMonth[..4]),
-                TransactionType = subcategory.TransactionType,
+                TransactionType = subcategory.TransactionType.ToString(),
                 SubcategoryName = subcategory.Name,
                 CategoryName = subcategory.Category.Name,
                 Total = totalSum,

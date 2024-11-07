@@ -141,7 +141,11 @@ namespace Common.Services
                 throw new FinancialMonthOfWrongFormatException();
             }
 
-            if (transactionDto.TransactionType == TransactionType.Income && transactionDto.SplitType != SplitType.Individual)
+            var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
+            var splitTypeEnumValue = transactionDto.SplitType.ConvertSplitTypeToDb();
+            transactionDto.ModeOfPayment.ConvertModeOfPaymentToDb();
+
+            if (transactionTypeEnumValue == TransactionType.Income && splitTypeEnumValue != SplitType.Individual)
             {
                 throw new MissingOrWrongDataException("Income can only be an individual expense");
             }
@@ -149,7 +153,8 @@ namespace Common.Services
 
         private void ValidateTransactionCategory(TransactionDto transactionDto, Subcategory subcategory)
         {
-            if (transactionDto.TransactionType != subcategory.Category.TransactionType)
+            var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
+            if (transactionTypeEnumValue != subcategory.Category.TransactionType)
             {
                 throw new MissingOrWrongDataException("Category is of the wrong transaction type");
             }
@@ -181,8 +186,9 @@ namespace Common.Services
 
         private static bool UserShareHasValidValues(TransactionDto transaction)
         {
-            if (transaction.SplitType == SplitType.Custom && transaction.UserShare == null) return false;
-            else if (transaction.SplitType == SplitType.Custom && (transaction.UserShare < 0 || transaction.UserShare > 1)) return false;
+            var splitTypeEnumValue = transaction.SplitType.ConvertSplitTypeToDb();
+            if (splitTypeEnumValue == SplitType.Custom && transaction.UserShare == null) return false;
+            else if (splitTypeEnumValue == SplitType.Custom && (transaction.UserShare < 0 || transaction.UserShare > 1)) return false;
             return true;
         }
 

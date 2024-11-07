@@ -9,8 +9,8 @@
         public Guid HouseholdId { get; set; }
 
         // Navigation property
-        public ICollection<Transaction> Transactions { get; set; }
-        public ICollection<MonthlyIncomeAfterTax> MonthlyIncomesAfterTax { get; set; }
+        public ICollection<Transaction> Transactions { get; set; } = [];
+        public ICollection<MonthlyIncomeAfterTax> MonthlyIncomesAfterTax { get; set; } = [];
 
         public required Household Household { get; set; }
     }

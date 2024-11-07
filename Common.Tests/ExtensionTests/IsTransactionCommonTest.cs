@@ -1,10 +1,11 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Model.Enums;
+using Common.Tests.TestData;
 using Common.Utils.Extensions;
 
 namespace Common.Tests.ExtensionTests
 {
-    public class IsTransactionCommonTest
+    public class IsTransactionCommonTest : GeneralTestData
     {
         [SetUp]
         public void Setup()
@@ -20,7 +21,9 @@ namespace Common.Tests.ExtensionTests
             {
                 TransactionType = type,
                 Description = "test",
-                FinancialMonth = "202412"
+                FinancialMonth = "202412",
+                Subcategory = Electricity,
+                User = User11
             };
 
             // Act
@@ -39,7 +42,9 @@ namespace Common.Tests.ExtensionTests
                 TransactionType = TransactionType.Expenses,
                 SplitType = SplitType.Individual,
                 Description = "test",
-                FinancialMonth = "202412"
+                FinancialMonth = "202412",
+                Subcategory = Electricity,
+                User = User11
             };
 
             // Act
@@ -60,7 +65,9 @@ namespace Common.Tests.ExtensionTests
                 TransactionType = TransactionType.Expenses,
                 SplitType = splitType,
                 Description = "test",
-                FinancialMonth = "202412"
+                FinancialMonth = "202412",
+                Subcategory = Electricity,
+                User = User11
             };
 
             // Act

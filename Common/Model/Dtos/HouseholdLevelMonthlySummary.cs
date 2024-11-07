@@ -1,5 +1,4 @@
-﻿using Common.Model.DatabaseObjects;
-using Common.Model.Enums;
+﻿using Common.Model.Enums;
 
 namespace Common.Model.Dtos
 {
@@ -7,7 +6,7 @@ namespace Common.Model.Dtos
     {
         public required string FinancialMonth { get; set; }
         public required int Year { get; set; }
-        public required TransactionType TransactionType { get; set; }
+        public required string TransactionType { get; set; }
         public required string SubcategoryName { get; set; }
         public required string CategoryName { get; set; }
         public required decimal Total { get; set; }

@@ -135,7 +135,10 @@ namespace Common.Tests.ITransactionService
                 Description = "test",
                 FinancialMonth = "202412",
                 SubcategoryName = "test",
-                CategoryName = "test"
+                CategoryName = "test",
+                ModeOfPayment = "NA",
+                TransactionType = "Expenses",
+                SplitType = "Even"
             };
 
             // Act
@@ -144,6 +147,32 @@ namespace Common.Tests.ITransactionService
             // Assert
             Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
         }
+
+        [Test]
+        public void CreateTransaction_ThrowsError_EnumTypesAreWrongAsStrrings()
+        {
+            // Arrange
+            var newTransaction = new TransactionDto
+            {
+                Id = Guid.NewGuid(),
+                UserId = GeneralTestData.User11.Id,
+                Description = "test",
+                FinancialMonth = "202412",
+                SubcategoryName = "test",
+                CategoryName = "test",
+                ModeOfPayment = "NA",
+                TransactionType = "wrong",
+                SplitType = "Even",
+                Amount = 23m
+            };
+
+            // Act
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+
+            // Assert
+            Assert.ThrowsAsync<MissingOrWrongDataException>(() => sut.CreateAsync(newTransaction, User1Hh1Id));
+        }
+
 
         [Test]
         public void CreateTransaction_ThrowsError_IfUserShareIsNullForCustomSplitType()

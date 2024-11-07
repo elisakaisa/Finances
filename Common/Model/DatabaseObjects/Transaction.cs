@@ -25,8 +25,8 @@ namespace Common.Model.DatabaseObjects
         public Guid UserId { get; set; }
 
         // Navigation property: Each transaction has one subcategory
-        public Subcategory Subcategory { get; set; }
+        public required Subcategory Subcategory { get; set; }
         // Navigation property: Each transaction has one user
-        public User User { get; set; }
+        public required User User { get; set; }
     }
 }
