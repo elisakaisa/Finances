@@ -13,6 +13,8 @@ Controller-Service-Repository-Database architecture.
 
 Database: SQLServer
 
+Authentication in API: Google auth, secrets stored in [secret storage](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-8.0&tabs=windows#enable-secret-storage)
+
 ## To run locally
 1. Set up SQLServer and add the connection string in `API/appsettings.json` or `API/appsettings.Development.json`
 2. Use the SQL script in `testDatabaseData.sql` to populate the database with test data

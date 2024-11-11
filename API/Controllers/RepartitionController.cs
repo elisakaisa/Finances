@@ -1,12 +1,14 @@
 ﻿using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RepartitionController : ControllerBase
     {
         private readonly ILogger<RepartitionController> _logger;
@@ -16,6 +18,12 @@ namespace API.Controllers
         {
             _logger = logger;
             _repartitionService = repartitionService;
+        }
+
+        [HttpOptions]
+        public IActionResult Options()
+        {
+            return Ok();
         }
 
         [HttpGet("household/{householdId}/monthly-repartition")]
