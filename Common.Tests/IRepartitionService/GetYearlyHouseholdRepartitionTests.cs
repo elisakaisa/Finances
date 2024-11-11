@@ -22,27 +22,6 @@ namespace Common.Tests.IRepartitionService
         }
 
         [Test]
-        public Task GetMonthlyHouseholdRepartition_ThrowsError_IfUserIsNotInHousehold()
-        {
-            // Arrange
-            var emptyIncomeList = new List<MonthlyIncomeAfterTax>();
-            var emptyTransactionList = new List<Transaction>();
-
-            _transactionRepo.Setup(r => r.GetYearlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), 2024))
-                .ReturnsAsync(emptyTransactionList);
-            _householdRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith2Users());
-            _monthlyIncomeAfterTaxRepo.Setup(r => r.GetYearlyIncomeAfterTaxByHouseholdIdAsync(It.IsAny<Guid>(), 2024))
-                .ReturnsAsync(emptyIncomeList);
-
-            // Act
-            var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-
-            // Assert
-            Assert.ThrowsAsync<UserNotInHouseholdException>(() => sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, User2Hh1Id));
-            return Task.CompletedTask;
-        }
-
-        [Test]
         public async Task GetYearlyHouseholdRepartition_Returns12Months_IfDataForAYearIsAvailable()
         {
             // Arrange
@@ -62,13 +41,13 @@ namespace Common.Tests.IRepartitionService
 
             _transactionRepo.Setup(r => r.GetYearlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), 2024))
                 .ReturnsAsync(emptyTransactionList);
-            _householdRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith2Users());
+            _householdRepository.Setup(r => r.GetHouseholdByUserId(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith2Users());
             _monthlyIncomeAfterTaxRepo.Setup(r => r.GetYearlyIncomeAfterTaxByHouseholdIdAsync(It.IsAny<Guid>(), 2024))
                 .ReturnsAsync(emptyIncomeList);
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetYearlyHouseholdRepartition(GeneralTestData.Household1Id, 2024, User1Hh1Id);
+            var result = await sut.GetYearlyHouseholdRepartition( 2024, User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);

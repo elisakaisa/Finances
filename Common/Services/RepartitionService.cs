@@ -24,20 +24,19 @@ namespace Common.Services
             _householdRepository = householdRepo;
         }
 
-        public async Task<Repartition> GetMonthlyHouseholdRepartition(Guid householdId, string financialMonth, Guid requestingUserGuid)
+        public async Task<Repartition> GetMonthlyHouseholdRepartition(string financialMonth, Guid requestingUserGuid)
         {
             ValidateFinancialMonthFormat(financialMonth);
 
-            var household = await _householdRepository.GetByIdAsync(householdId);
-            ValidateThatUserIsInHousehold(requestingUserGuid, household);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserGuid);
 
             if (household.Users.Count > 2) 
             {
                 throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
             }
 
-            var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
-            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(householdId, financialMonth);
+            var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
+            var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(household.Id, financialMonth);
 
             if (household.Users.Count == 1)
             {
@@ -47,10 +46,9 @@ namespace Common.Services
             return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, financialMonth);
         }
 
-        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(Guid householdId, int year, Guid requestingUser)
+        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(int year, Guid requestingUserGuid)
         {
-            var household = await _householdRepository.GetByIdAsync(householdId);
-            ValidateThatUserIsInHousehold(requestingUser, household);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserGuid);
 
             if (household.Users.Count > 2)
             {
@@ -71,16 +69,6 @@ namespace Common.Services
             {
                 throw new FinancialMonthOfWrongFormatException();
             }
-        }
-
-        private static void ValidateThatUserIsInHousehold(Guid requestingUserId, Household household)
-        {
-            var userIsInHousehold = household.Users.Select(h => h.Id == requestingUserId).FirstOrDefault();
-            if (!userIsInHousehold)
-            {
-                throw new UserNotInHouseholdException();
-            }
-
         }
 
         private async Task<List<Repartition>> CalculateYearlyRepartition(Household household, int year)

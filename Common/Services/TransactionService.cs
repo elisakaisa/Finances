@@ -14,13 +14,15 @@ namespace Common.Services
         private readonly ISubcategoryRepository _subcategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IHouseholdRepository _householdRepository;
 
-        public TransactionService(ITransactionRepository transactionRepository, ICategoryRepository categoryRepo, ISubcategoryRepository subcategoryRepo, IUserRepository userRepo) 
+        public TransactionService(ITransactionRepository transactionRepository, ICategoryRepository categoryRepo, ISubcategoryRepository subcategoryRepo, IUserRepository userRepo, IHouseholdRepository householdRepo) 
         { 
             _transactionRepository = transactionRepository;
             _categoryRepository = categoryRepo;
             _subcategoryRepository = subcategoryRepo;
             _userRepository = userRepo;
+            _householdRepository = householdRepo;
         }
 
         /// <summary>
@@ -61,12 +63,12 @@ namespace Common.Services
             return await _transactionRepository.DeleteAsync(transaction);
         }
 
-        public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByHouseholdId(Guid householdId, string financialMonth, Guid requestingUserId)
+        public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByHousehold(string financialMonth, Guid requestingUserId)
         {
             ValidateFinancialMonth(financialMonth);
-            await ValidateThatUserIsInHousehold(requestingUserId, householdId);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
 
-            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
+            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
             return transactions.ConvertToDto();
         }
 
@@ -80,10 +82,10 @@ namespace Common.Services
             return transactions.ConvertToDto();
         }
 
-        public async Task<ICollection<TransactionDto>> GetYearlyTransactionsByHouseholdId(Guid householdId, int year, Guid requestingUser)
+        public async Task<ICollection<TransactionDto>> GetYearlyTransactionsByHousehold(int year, Guid requestingUserId)
         {
-            await ValidateThatUserIsInHousehold(requestingUser, householdId);
-            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
+            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
             return transactions.ConvertToDto();
         }
 
@@ -117,15 +119,6 @@ namespace Common.Services
                 throw new UserNotInHouseholdException();
             }
 
-        }
-
-        private async Task ValidateThatUserIsInHousehold(Guid requestingUserId, User user)
-        {
-            var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
-            if (requestingUser.HouseholdId != user.HouseholdId)
-            {
-                throw new UserNotInHouseholdException();
-            }
         }
 
 

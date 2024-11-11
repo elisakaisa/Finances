@@ -137,22 +137,22 @@ namespace API.Controllers
         }
 
 
-        [HttpGet("household/{householdId}/monthly-transactions")]
-        public async Task<IActionResult> GetMonthlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
+        [HttpGet("household/monthly-transactions")]
+        public async Task<IActionResult> GetMonthlyTransactionsByHousehold([FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
-                return BadRequest("Household ID, financial month, and requesting user ID are required.");
+                return BadRequest("Financial month, and requesting user ID are required.");
             }
 
             try
             {
-                var transactions = await _transactionService.GetMonthlyTransactionsByHouseholdId(householdId, financialMonth, requestingUserId);
+                var transactions = await _transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
                 return Ok(transactions);
             }
-            catch (UserNotInHouseholdException)
+            catch (KeyNotFoundException)
             {
-                return Forbid("User is not authorized to view transactions for this household.");
+                return NotFound();
             }
             catch (FinancialMonthOfWrongFormatException)
             {
@@ -165,22 +165,22 @@ namespace API.Controllers
         }
 
 
-        [HttpGet("household/{householdId}/yearly-transactions")]
-        public async Task<IActionResult> GetYearlyTransactionsByHouseholdId([FromRoute] Guid householdId, [FromQuery] int year, [FromHeader] Guid requestingUserId)
+        [HttpGet("household/yearly-transactions")]
+        public async Task<IActionResult> GetYearlyTransactionsByHousehold([FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || !year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (!year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
-                return BadRequest("Household ID, valid year, and requesting user ID are required.");
+                return BadRequest("Valid year, and requesting user ID are required.");
             }
 
             try
             {
-                var transactions = await _transactionService.GetYearlyTransactionsByHouseholdId(householdId, year, requestingUserId);
+                var transactions = await _transactionService.GetYearlyTransactionsByHousehold(year, requestingUserId);
                 return Ok(transactions);
             }
-            catch (UserNotInHouseholdException)
+            catch (KeyNotFoundException)
             {
-                return Forbid("User is not authorized to view transactions for this household.");
+                return NotFound();
             }
             catch (Exception)
             {

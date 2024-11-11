@@ -34,11 +34,11 @@ namespace Common.Tests.ISummaryService
             _transactionRepo.Setup(r => r.GetYearlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), It.IsAny<int>()))
                 .ReturnsAsync(transactions);
             _subcetgoryRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(subcategories);
-            _householdRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(household);
+            _householdRepo.Setup(r => r.GetHouseholdByUserId(It.IsAny<Guid>())).ReturnsAsync(household);
 
             // act
             var sut = new SummaryService(_transactionRepo.Object, _subcetgoryRepo.Object, _householdRepo.Object);
-            var result = await sut.GetMonthlyTransactionsByYearAndHouseholdId(2024, Household1Id, User1Hh1Id);
+            var result = await sut.GetMonthlyTransactionsByYearAndHouseholdId(2024, User1Hh1Id);
 
             // assert
             Assert.That(result, Is.Not.Null);

@@ -55,7 +55,7 @@ namespace Common.Tests.ITransactionService
                 .ReturnsAsync(updatedTransaction);
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object, _householdRepository.Object);
             var result = await sut.UpdateAsync(updatedTransaction.ConvertToDto(), User1Hh1Id);
 
             // Assert
@@ -78,7 +78,7 @@ namespace Common.Tests.ITransactionService
                 .ReturnsAsync(updatedTransaction);
 
             // Act
-            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object);
+            var sut = new TransactionService(_transactionRepo.Object, _categoryRepository.Object, _subcategoryRepository.Object, _userRepository.Object, _householdRepository.Object);
 
             // Assert
             Assert.ThrowsAsync<FinancialMonthOfWrongFormatException>(() => sut.UpdateAsync(updatedTransaction.ConvertToDto(), User1Hh1Id));

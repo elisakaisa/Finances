@@ -18,22 +18,18 @@ namespace API.Controllers
             _repartitionService = repartitionService;
         }
 
-        [HttpGet("household/{householdId}/monthly-repartition")]
-        public async Task<IActionResult> GetMonthlyHouseholdByHouseholdId([FromRoute] Guid householdId, [FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
+        [HttpGet("household/monthly-repartition")]
+        public async Task<IActionResult> GetMonthlyHouseholdByHouseholdId([FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
-                return BadRequest("Household ID, financial month, and requesting user ID are required.");
+                return BadRequest("Financial month, and requesting user ID are required.");
             }
 
             try
             {
-                var repartition = await _repartitionService.GetMonthlyHouseholdRepartition(householdId, financialMonth, requestingUserId);
+                var repartition = await _repartitionService.GetMonthlyHouseholdRepartition(financialMonth, requestingUserId);
                 return Ok(repartition);
-            }
-            catch (UserNotInHouseholdException)
-            {
-                return Forbid("User is not authorized to view transactions for this household.");
             }
             catch (HouseholdWithMoreThanTwoUsersNotSupportedException)
             {
@@ -43,32 +39,36 @@ namespace API.Controllers
             {
                 return BadRequest("Financial month of wrong format exception");
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while retrieving transactions.");
             }
         }
 
-        [HttpGet("household/{householdId}/yearly-repartition")]
-        public async Task<IActionResult> GetYearlyHouseholdByHouseholdId([FromRoute] Guid householdId, [FromQuery] int year, [FromHeader] Guid requestingUserId)
+        [HttpGet("household/yearly-repartition")]
+        public async Task<IActionResult> GetYearlyHouseholdByHouseholdId([FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            if (householdId == Guid.Empty || !year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
+            if (!year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
             {
-                return BadRequest("Household ID, financial month, and requesting user ID are required.");
+                return BadRequest("Year and requesting user ID are required.");
             }
 
             try
             {
-                var repartitions = await _repartitionService.GetYearlyHouseholdRepartition(householdId, year, requestingUserId);
+                var repartitions = await _repartitionService.GetYearlyHouseholdRepartition( year, requestingUserId);
                 return Ok(repartitions);
-            }
-            catch (UserNotInHouseholdException)
-            {
-                return Forbid("User is not authorized to view transactions for this household.");
             }
             catch (HouseholdWithMoreThanTwoUsersNotSupportedException)
             {
-                return BadRequest("More than 2 users in the houshold");
+                return BadRequest("More than 2 users in the household");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception)
             {

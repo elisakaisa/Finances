@@ -21,24 +21,22 @@ namespace Common.Services
             _householdRepository = householdRepo;
         }
 
-        public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid householdId, Guid requestingUser)
+        public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid requestingUserId)
         {
             ValidateFinancialMonth(financialMonth);
-            var household = await _householdRepository.GetByIdAsync(householdId);
-            ValidateThatUserIsInHousehold(requestingUser, household);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
 
-            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(householdId, financialMonth);
+            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
             var subcategories = await _subcategoryRepository.GetAllAsync();
 
             return CalculateHouseholdLevelMonthlySummaries(transactions, subcategories, household, financialMonth);
         }
 
-        public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid householdId, Guid requestingUser)
+        public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid requestingUserId)
         {
-            var household = await _householdRepository.GetByIdAsync(householdId);
-            ValidateThatUserIsInHousehold(requestingUser, household);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
 
-            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(householdId, year);
+            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
             var subcategories = await _subcategoryRepository.GetAllAsync();
 
             var householdLevelMonthlySummaries = new List<HouseholdLevelMonthlySummary>();
@@ -51,15 +49,6 @@ namespace Common.Services
             }
 
             return householdLevelMonthlySummaries;
-        }
-
-        private static void ValidateThatUserIsInHousehold(Guid requestingUserId, Household household)
-        {
-            var userIsInHousehold = household.Users.Select(h => h.Id == requestingUserId).FirstOrDefault();
-            if (!userIsInHousehold)
-            {
-                throw new UserNotInHouseholdException();
-            }
         }
 
         private void ValidateFinancialMonth(string financialMonth)
