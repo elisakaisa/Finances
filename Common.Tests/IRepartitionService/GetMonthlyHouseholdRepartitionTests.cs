@@ -1,4 +1,5 @@
-﻿using Common.Model.Enums;
+﻿using Common.Model.Dtos;
+using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Tests.TestData;
@@ -99,10 +100,11 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpensesPaidByUser[User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User1Hh1Id)));
                 Assert.That(result.TotalCommonExpensesPaidByUser[User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User2Hh1Id)));
             });
+            SanityCheckOutputs(result);
         }
 
         [TestCase(1, 2, 3, 4, 0.5, 0.5)]
-        [TestCase(0, 0, 0, 0, 0, 0)]
+        [TestCase(0, 0, 0, 0, 0.5, 0.5)]
         public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartition_IfHouseholdHas2UsersWithEqualIncomeAndAllTransactionSplitIncomeBased
             (decimal expense1U1, decimal expense2U1, decimal expense1U2, decimal payback1U1, decimal actualShareUser1, decimal actualShareUser2)
         {
@@ -131,8 +133,7 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TargetUserShare[User1Hh1Id], Is.EqualTo(actualShareUser1));
                 Assert.That(result.TargetUserShare[User2Hh1Id], Is.EqualTo(actualShareUser2));
             });
-            //Assert.That(result.ActualUserShare[GeneralTestData.User1Hh1Id], Is.EqualTo(0.5m));
-            //Assert.That(result.AtualUserShare[GeneralTestData.User2Hh1Id], Is.EqualTo(0.5m));
+            SanityCheckOutputs(result);
         }
 
 
@@ -188,6 +189,7 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.ActualUserShare[User1Hh1Id], Is.EqualTo(1));
                 Assert.That(result.ActualUserShare[User2Hh1Id], Is.EqualTo(0));
             });
+            SanityCheckOutputs(result);
         }
 
 
@@ -230,6 +232,7 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.UserShouldPay[User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[User2Hh1Id], Is.EqualTo(user2ShouldPay));
             });
+            SanityCheckOutputs(result);
         }
 
 
@@ -276,6 +279,7 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.UserSharesOfHouseholdIncome[User1Hh1Id], Is.EqualTo(incomeUserShare1));
                 Assert.That(result.UserSharesOfHouseholdIncome[User2Hh1Id], Is.EqualTo(incomeUserShare2));
             });
+            SanityCheckOutputs(result);
         }
 
 
@@ -323,6 +327,7 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.UserSharesOfHouseholdIncome[User1Hh1Id], Is.EqualTo(incomeUserShare1));
                 Assert.That(result.UserSharesOfHouseholdIncome[User2Hh1Id], Is.EqualTo(incomeUserShare2));
             });
+            SanityCheckOutputs(result);
         }
 
 
@@ -360,6 +365,22 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TotalCommonExpensesPaidByUser[User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User2Hh1Id)));
                 Assert.That(result.UserShouldPay[User1Hh1Id], Is.EqualTo(user1ShouldPay));
                 Assert.That(result.UserShouldPay[User2Hh1Id], Is.EqualTo(user2ShouldPay));
+            });
+            SanityCheckOutputs(result);
+        }
+
+        /// <summary>
+        /// Chaecks that output logically make sense
+        /// </summary>
+        /// <param name="result"></param>
+        private void SanityCheckOutputs(Repartition result)
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpensesPaidByUser[User1Hh1Id] + result.TotalCommonExpensesPaidByUser[User2Hh1Id], Is.EqualTo(result.TotalCommonExpenses));
+                Assert.That(result.UserShouldPay[User1Hh1Id] + result.UserShouldPay[User2Hh1Id], Is.EqualTo(result.TotalCommonExpenses));
+                Assert.That(result.TargetUserShare[User1Hh1Id] + result.TargetUserShare[User2Hh1Id], Is.EqualTo(1));
+                Assert.That(result.ActualUserShare[User1Hh1Id] + result.ActualUserShare[User2Hh1Id], Is.EqualTo(1));
             });
         }
     }
