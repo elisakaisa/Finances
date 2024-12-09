@@ -70,6 +70,11 @@ namespace Common.Tests.TestData
             CreateTransaction(amount, TransactionType.Expenses, SplitType.Custom, userShare: userShare)
         ];
 
+        public List<Transaction> GetSingleTransactionByUser2WithCustomSplit(decimal amount, decimal userShare) =>
+        [
+            CreateTransaction(amount, TransactionType.Expenses, SplitType.Custom, userShare: userShare, userId: User2Hh1Id, user: User12)
+        ];
+
         public List<Transaction> GetTwoTransactionByUser1WithCustomSplit(decimal amount1, decimal userShare1, decimal amount2, decimal userShare2) =>
         [
             CreateTransaction(amount1, TransactionType.Expenses, SplitType.Custom, userShare: userShare1),

@@ -157,7 +157,7 @@ namespace Common.Tests.IRepartitionService
         [TestCase(1, 0.7, 1, 0, 0.7, 0.3)]
         [TestCase(1, 0.7, 0, 1, 0.7, 0.3)]
         [TestCase(1, 0.7, 5, 6, 0.7, 0.3)]
-        public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartitionForOneTransaction_IfHouseholdHas2UsersWithInequalIncomeAnd1TransactionSplitCustomBased
+        public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartitionForOneTransactionByUser1_IfHouseholdHas2UsersWith1TransactionSplitCustomBased
             (decimal transactionAmount, decimal user1ShareOfTransaction, decimal income1, decimal income2, decimal user1ShouldPay, decimal user2ShouldPay)
         {
             // Arrange
@@ -188,6 +188,49 @@ namespace Common.Tests.IRepartitionService
                 Assert.That(result.TargetUserShare[User2Hh1Id], Is.EqualTo(1 - user1ShareOfTransaction));
                 Assert.That(result.ActualUserShare[User1Hh1Id], Is.EqualTo(1));
                 Assert.That(result.ActualUserShare[User2Hh1Id], Is.EqualTo(0));
+            });
+            SanityCheckOutputs(result);
+        }
+
+        //Transaction by user 2 entirely on user 1
+        [TestCase(1, 0, 1, 0)]
+        //Tramsaction by user 2 entirely on user 2
+        [TestCase(1, 1, 0, 1)]
+        // evenly split transaction
+        [TestCase(1, 0.5, 0.5, 0.5)]
+        // unevenly split transaction
+        [TestCase(1, 0.7, 0.3, 0.7)]
+        public async Task GetMonthlyHouseholdRepartition_ReturnsCorrectRepartitionForOneTransactionByUser2_IfHouseholdHas2UsersWith1TransactionSplitCustomBased
+            (decimal transactionAmount, decimal user2ShareOfTransaction, decimal user1ShouldPay, decimal user2ShouldPay)
+        {
+            // Arrange
+            var testTransactions = GetSingleTransactionByUser2WithCustomSplit(transactionAmount, user2ShareOfTransaction);
+            var montlyIncomeAfterTaxUser = GetMonthlyIncomesAfterTax(1, 1); // income doesn't matter in custom split
+
+            _transactionRepo.Setup(r => r.GetMonthlyTransactionsByHouseholdIdAsync(It.IsAny<Guid>(), "202412"))
+                .ReturnsAsync(testTransactions);
+            _householdRepository.Setup(r => r.GetHouseholdByUserId(It.IsAny<Guid>())).ReturnsAsync(GetHouseholdWith2Users());
+            _monthlyIncomeAfterTaxRepo.Setup(r => r.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(It.IsAny<Guid>(), "202412"))
+                .ReturnsAsync(montlyIncomeAfterTaxUser);
+
+            // Act
+            var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
+            var result = await sut.GetMonthlyHouseholdRepartition("202412", User1Hh1Id);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.UserName, Has.Count.EqualTo(2));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(Household1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User1Hh1Id)));
+                Assert.That(result.TotalCommonExpensesPaidByUser[User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User2Hh1Id)));
+                Assert.That(result.UserShouldPay[User1Hh1Id], Is.EqualTo(user1ShouldPay));
+                Assert.That(result.UserShouldPay[User2Hh1Id], Is.EqualTo(user2ShouldPay));
+                Assert.That(result.TargetUserShare[User1Hh1Id], Is.EqualTo(1 - user2ShareOfTransaction));
+                Assert.That(result.TargetUserShare[User2Hh1Id], Is.EqualTo(user2ShareOfTransaction));
+                Assert.That(result.ActualUserShare[User1Hh1Id], Is.EqualTo(0));
+                Assert.That(result.ActualUserShare[User2Hh1Id], Is.EqualTo(1));
             });
             SanityCheckOutputs(result);
         }

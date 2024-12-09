@@ -197,9 +197,21 @@ namespace Common.Services
                         repartition.UserShouldPay[user2Id] += transaction.Amount * repartition.UserSharesOfHouseholdIncome[user2Id];
                         break;
                     case SplitType.Custom:
-                        var userShare = transaction.UserShare != null ? (decimal)transaction.UserShare : 0.5m;
-                        var user1Share = transaction.UserId == user1Id ? userShare : (1 - userShare);
-                        var user2Share = 1 - userShare;
+                        var defaultShare = 0.5m;
+                        var userShare = transaction.UserShare ?? defaultShare;
+
+                        decimal user1Share, user2Share;
+                        if (transaction.UserId == user1Id)
+                        {
+                            user1Share = userShare;
+                            user2Share = 1 - userShare;
+                        }
+                        else
+                        {
+                            user2Share = userShare;
+                            user1Share = 1 - userShare;
+                        }
+
                         repartition.UserShouldPay[user1Id] += transaction.Amount * user1Share;
                         repartition.UserShouldPay[user2Id] += transaction.Amount * user2Share;
                         break;
