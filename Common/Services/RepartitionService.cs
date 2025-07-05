@@ -1,7 +1,6 @@
 ﻿using Common.Model.DatabaseObjects;
 using Common.Model.Dtos;
 using Common.Model.Enums;
-using Common.Repositories;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
 using Common.Utils.Exceptions;
@@ -9,32 +8,21 @@ using Common.Utils.Extensions;
 
 namespace Common.Services
 {
-    public class RepartitionService : IRepartitionService
+    public class RepartitionService(
+        ITransactionRepository transactionRepo,
+        IMonthlyIncomeAfterTaxRepository monthlyIncomeAfterTaxRepo, IHouseholdRepository householdRepo) : IRepartitionService
     {
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly IMonthlyIncomeAfterTaxRepository _monthlyIncomeAfterTaxRepository;
-        private readonly IHouseholdRepository _householdRepository;
+        private readonly ITransactionRepository _transactionRepository = transactionRepo;
+        private readonly IMonthlyIncomeAfterTaxRepository _monthlyIncomeAfterTaxRepository = monthlyIncomeAfterTaxRepo;
+        private readonly IHouseholdRepository _householdRepository = householdRepo;
 
-        public RepartitionService(
-            ITransactionRepository transactionRepo,
-            IMonthlyIncomeAfterTaxRepository monthlyIncomeAfterTaxRepo, IHouseholdRepository householdRepo) 
-        { 
-            _transactionRepository = transactionRepo;
-            _monthlyIncomeAfterTaxRepository = monthlyIncomeAfterTaxRepo;
-            _householdRepository = householdRepo;
-        }
+        private static readonly decimal _evenShare = 0.5m;
 
-        public async Task<Repartition> GetMonthlyHouseholdRepartition(string financialMonth, Guid requestingUserGuid)
+        public async Task<Repartition> GetMonthlyHouseholdRepartition(string financialMonth, Guid requestingUserId)
         {
             ValidateFinancialMonthFormat(financialMonth);
 
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserGuid);
-
-            if (household.Users.Count > 2) 
-            {
-                throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
-            }
-
+            var household = await GetHousehold(requestingUserId);
             var householdTransactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
             var monthlyIncomeAfterTax = await _monthlyIncomeAfterTaxRepository.GetMonthlyIncomeAfterTaxByHouseholdIdAsync(household.Id, financialMonth);
 
@@ -46,14 +34,9 @@ namespace Common.Services
             return CalculateMonthlyRepartition(household, monthlyIncomeAfterTax, householdTransactions, financialMonth);
         }
 
-        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(int year, Guid requestingUserGuid)
+        public async Task<List<Repartition>> GetYearlyHouseholdRepartition(int year, Guid requestingUserId)
         {
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserGuid);
-
-            if (household.Users.Count > 2)
-            {
-                throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
-            }
+            var household = await GetHousehold(requestingUserId);
 
             if (household.Users.Count == 1)
             {
@@ -69,6 +52,17 @@ namespace Common.Services
             {
                 throw new FinancialMonthOfWrongFormatException();
             }
+        }
+
+        private async Task<Household> GetHousehold(Guid user)
+        {
+            var household = await _householdRepository.GetHouseholdByUserId(user);
+
+            if (household.Users.Count > 2)
+            {
+                throw new HouseholdWithMoreThanTwoUsersNotSupportedException();
+            }
+            return household;
         }
 
         private async Task<List<Repartition>> CalculateYearlyRepartition(Household household, int year)
@@ -89,15 +83,21 @@ namespace Common.Services
             return yearlyRepartition;
         }
 
-        private Repartition CalculateMonthlyRepartitionForSingleUserHousehold(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomeAfterTax, ICollection<Transaction> householdTransactions, string monthYear)
+        private static Repartition CalculateMonthlyRepartitionForSingleUserHousehold(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomseAfterTax, ICollection<Transaction> householdTransactions, string monthYear)
+        {
+            var repartition = InitializeRepartitionForSingleUserHousehold(household, monthlyIncomseAfterTax, monthYear);
+            ProcessMonthlyTransactionsForSingleUserHousehold(householdTransactions, repartition);
+            return RoundRepartitionSums(repartition);
+        }
+
+        private static Repartition InitializeRepartitionForSingleUserHousehold(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomesAfterTax, string monthYear)
         {
             var user1 = household.Users.First();
-
             var singleUser = household.Users.ToDictionary(user => user.Id, user => user.Name);
 
             var incomeUser = singleUser.ToDictionary(
                 user => user.Key,
-                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Key));
+                user => GetMonthlyIncomeForUser(monthlyIncomesAfterTax, user.Key));
 
             var householdIncome = incomeUser.Values.Sum();
             var userSharesOfHouseholdIncome = CalculateHouseholdIncomeShares(incomeUser, householdIncome);
@@ -105,7 +105,7 @@ namespace Common.Services
             var commonExpensesPaidByUser = singleUser.ToDictionary(user => user.Key, user => 0m);
             var userShouldPay = singleUser.ToDictionary(user => user.Key, user => 0m);
 
-            Repartition repartition = new()
+            return new()
             {
                 HouseholdId = household.Id,
                 UserName = singleUser,
@@ -124,31 +124,38 @@ namespace Common.Services
                     [user1.Id] = 1m
                 }
             };
-
-            ProcessMonthlyTransactionsForSingleUserHousehold(householdTransactions, repartition);
-            return RoundRepartitionSums(repartition);
         }
 
-        private static Repartition CalculateMonthlyRepartition(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomeAfterTax, ICollection<Transaction> householdTransactions, string monthYear)
+        private static Repartition CalculateMonthlyRepartition(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomesAfterTax, ICollection<Transaction> householdTransactions, string monthYear)
         {
             var user1 = household.Users.First();
             var user2 = household.Users.Last();
 
+            var repartition = InitializeRepartition(household, monthlyIncomesAfterTax, monthYear);
+
+            ProcessMonthlyTransactions(householdTransactions, repartition, user1.Id, user2.Id);
+            CalculateUserShares(repartition, user1.Id, user2.Id);
+
+            return RoundRepartitionSums(repartition);
+        }
+
+        private static Repartition InitializeRepartition(Household household, ICollection<MonthlyIncomeAfterTax> monthlyIncomesAfterTax, string monthYear)
+        {
             var users = household.Users.ToDictionary(user => user.Id, user => user.Name);
 
             var incomeUser = users.ToDictionary(
-                user => user.Key, 
-                user => GetMonthlyIncomeForUser(monthlyIncomeAfterTax, user.Key));
+                user => user.Key,
+                user => GetMonthlyIncomeForUser(monthlyIncomesAfterTax, user.Key));
 
             var householdIncome = incomeUser.Values.Sum();
             var userSharesOfHouseholdIncome = CalculateHouseholdIncomeShares(incomeUser, householdIncome);
 
             var commonExpensesPaidByUser = users.ToDictionary(user => user.Key, user => 0m);
             var userShouldPay = users.ToDictionary(user => user.Key, user => 0m);
-            var targetShare = users.ToDictionary(user => user.Key, user => 0.5m);
-            var actualShare = users.ToDictionary(user => user.Key, user => 0.5m);
+            var targetShare = users.ToDictionary(user => user.Key, user => _evenShare);
+            var actualShare = users.ToDictionary(user => user.Key, user => _evenShare);
 
-            Repartition repartition = new()
+            return new()
             {
                 HouseholdId = household.Id,
                 UserName = users,
@@ -161,11 +168,6 @@ namespace Common.Services
                 TargetUserShare = targetShare,
                 ActualUserShare = actualShare
             };
-
-            ProcessMonthlyTransactions(householdTransactions, repartition, user1.Id, user2.Id);
-            CalculateUserShares(repartition, user1.Id, user2.Id);
-
-            return RoundRepartitionSums(repartition);
         }
 
         private static void ProcessMonthlyTransactionsForSingleUserHousehold(ICollection<Transaction> householdTransactions, Repartition repartition)
@@ -189,34 +191,39 @@ namespace Common.Services
                 switch (transaction.SplitType)
                 {
                     case SplitType.Even:
-                        repartition.UserShouldPay[user1Id] += transaction.Amount * 0.5m;
-                        repartition.UserShouldPay[user2Id] += transaction.Amount * 0.5m;
+                        repartition.UserShouldPay[user1Id] += transaction.Amount * _evenShare;
+                        repartition.UserShouldPay[user2Id] += transaction.Amount * _evenShare;
                         break;
                     case SplitType.IncomeBased:
                         repartition.UserShouldPay[user1Id] += transaction.Amount * repartition.UserSharesOfHouseholdIncome[user1Id];
                         repartition.UserShouldPay[user2Id] += transaction.Amount * repartition.UserSharesOfHouseholdIncome[user2Id];
                         break;
                     case SplitType.Custom:
-                        var defaultShare = 0.5m;
-                        var userShare = transaction.UserShare ?? defaultShare;
+                        var userShare = transaction.UserShare ?? _evenShare;
 
-                        decimal user1Share, user2Share;
-                        if (transaction.UserId == user1Id)
-                        {
-                            user1Share = userShare;
-                            user2Share = 1 - userShare;
-                        }
-                        else
-                        {
-                            user2Share = userShare;
-                            user1Share = 1 - userShare;
-                        }
+                        var (user1Share, user2Share) = GetCustomSplitUserShares(transaction.UserId, user1Id, userShare);
 
                         repartition.UserShouldPay[user1Id] += transaction.Amount * user1Share;
                         repartition.UserShouldPay[user2Id] += transaction.Amount * user2Share;
                         break;
                 }
             }
+        }
+
+        private static (decimal, decimal) GetCustomSplitUserShares(Guid transcationUserId, Guid user1Id, decimal userShare)
+        {
+            decimal user1Share, user2Share;
+            if (transcationUserId == user1Id)
+            {
+                user1Share = userShare;
+                user2Share = 1 - userShare;
+            }
+            else
+            {
+                user2Share = userShare;
+                user1Share = 1 - userShare;
+            }
+            return (user1Share, user2Share);
         }
 
         private static void CalculateUserShares(Repartition repartition, Guid user1, Guid user2)

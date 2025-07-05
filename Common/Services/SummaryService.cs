@@ -51,7 +51,7 @@ namespace Common.Services
             return householdLevelMonthlySummaries;
         }
 
-        private void ValidateFinancialMonth(string financialMonth)
+        private static void ValidateFinancialMonth(string financialMonth)
         {
             if (!financialMonth.IsFinancialMonthOfCorrectFormat())
             {

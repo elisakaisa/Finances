@@ -128,6 +128,7 @@ namespace Common.Services
             {
                 throw new MissingOrWrongDataException("Mandatory fields are not filled");
             }
+            ValidateFinancialMonth(transactionDto.FinancialMonth);
 
             var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
             var splitTypeEnumValue = transactionDto.SplitType.ConvertSplitTypeToDb();
