@@ -111,6 +111,7 @@ namespace Common.Services
             return updatedTransaction;
         }
 
+
         private async Task ValidateThatUserIsInHousehold(Guid requestingUserId, Guid householdId)
         {
             var requestingUser = await _userRepository.GetByIdAsync(requestingUserId);
@@ -121,17 +122,11 @@ namespace Common.Services
 
         }
 
-
-        private void ValidateTransactionData(TransactionDto transactionDto)
+        private static void ValidateTransactionData(TransactionDto transactionDto)
         {
             if (!MandatoryFieldsAreFilled(transactionDto) || !UserShareHasValidValues(transactionDto))
             {
                 throw new MissingOrWrongDataException("Mandatory fields are not filled");
-            }
-
-            if (!transactionDto.FinancialMonth.IsFinancialMonthOfCorrectFormat())
-            {
-                throw new FinancialMonthOfWrongFormatException();
             }
 
             var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
@@ -144,7 +139,7 @@ namespace Common.Services
             }
         }
 
-        private void ValidateTransactionCategory(TransactionDto transactionDto, Subcategory subcategory)
+        private static void ValidateTransactionCategory(TransactionDto transactionDto, Subcategory subcategory)
         {
             var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
             if (transactionTypeEnumValue != subcategory.Category.TransactionType)

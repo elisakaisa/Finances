@@ -21,47 +21,15 @@ namespace API.Controllers
         [HttpGet("household/monthly-summaries")]
         public async Task<IActionResult> GetMonthlyTransactionsByMonthAndHouseholdId([FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            if (financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
-            {
-                return BadRequest("Financial month, and requesting user ID are required.");
-            }
-
-            try
-            {
-                var summaries = await _summaryService.GetMonthlyTransactionsByMonthAndHouseholdId(financialMonth, requestingUserId);
-                return Ok(summaries);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An error occurred while retrieving transactions.");
-            }
+            var summaries = await _summaryService.GetMonthlyTransactionsByMonthAndHouseholdId(financialMonth, requestingUserId);
+            return Ok(summaries);
         }
 
         [HttpGet("household/yearly-summaries")]
         public async Task<IActionResult> GetMonthlyTransactionsByYearAndHouseholdId([FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            if (!year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
-            {
-                return BadRequest("Valid year, and requesting user ID are required.");
-            }
-
-            try
-            {
-                var summaries = await _summaryService.GetMonthlyTransactionsByYearAndHouseholdId(year, requestingUserId);
-                return Ok(summaries);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An error occurred while retrieving transactions.");
-            }
+            var summaries = await _summaryService.GetMonthlyTransactionsByYearAndHouseholdId(year, requestingUserId);
+            return Ok(summaries);
         }
     }
 }

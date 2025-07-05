@@ -22,117 +22,41 @@ namespace API.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionDto transaction, [FromHeader] Guid userId)
         {
-            if (transaction == null || userId == Guid.Empty)
-            {
-                return BadRequest("Transaction data or user ID is missing.");
-            }
-
-            try
-            {
-                var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
-                return Ok(createdTransaction);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (UserNotInHouseholdException)
-            {
-                return Forbid("User is not authorized to view transactions for this household.");
-            }
-            catch (FinancialMonthOfWrongFormatException)
-            {
-                return BadRequest("Financial month of wrong format exception");
-            }
-            catch (MissingOrWrongDataException)
-            {
-                return BadRequest("Missing data");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Something went wrong.");
-            }
+            var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
+            return Ok(createdTransaction);
         }
 
 
         [HttpPut("update/{id:guid}")]
         public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] TransactionDto transactionDto)
         {
-            if (transactionDto == null || id != transactionDto.Id)
+            // TODO: do I want to retrieve user ID from autheticated user context?
+            // probs this kind of thing used if using 3rd party provider
+            var requestingUserId = Guid.Parse(User.FindFirst("userId")?.Value ?? string.Empty);
+
+            var updatedTransaction = await _transactionService.UpdateAsync(transactionDto, requestingUserId);
+
+            if (updatedTransaction == null)
             {
-                return BadRequest("Transaction data is invalid or ID does not match.");
+                return NotFound("Transaction not found.");
             }
 
-            try
-            {
-                // TODO: do I want to retrieve user ID from autheticated user context?
-                // probs this kind of thing used if using 3rd party provider
-                var requestingUserId = Guid.Parse(User.FindFirst("userId")?.Value ?? string.Empty);
-
-                var updatedTransaction = await _transactionService.UpdateAsync(transactionDto, requestingUserId);
-
-                if (updatedTransaction == null)
-                {
-                    return NotFound("Transaction not found.");
-                }
-
-                return Ok(updatedTransaction);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid("You are not authorized to update this transaction.");
-            }
-            catch (UserNotInHouseholdException)
-            {
-                return Forbid("User is not authorized to view transactions for this household.");
-            }
-            catch (FinancialMonthOfWrongFormatException)
-            {
-                return BadRequest("Financial month of wrong format exception");
-            }
-            catch (MissingOrWrongDataException)
-            {
-                return BadRequest("Missing data");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Something went wrong.");
-            }
+            return Ok(updatedTransaction);
         }
 
         [HttpDelete]
         [Route("delete")]
         public async Task<IActionResult> DeleteTransaction([FromBody] TransactionDto transactionDto, [FromQuery] Guid requestingUserId)
         {
-            if (transactionDto == null || requestingUserId == Guid.Empty)
-            {
-                return BadRequest("Transaction data is required.");
-            }
+            bool result = await _transactionService.DeleteAsync(transactionDto, requestingUserId);
 
-            try
+            if (result)
             {
-                bool result = await _transactionService.DeleteAsync(transactionDto, requestingUserId);
-
-                if (result)
-                {
-                    return Ok(new { success = true, message = "Transaction deleted successfully." });
-                }
-                else
-                {
-                    return NotFound(new { success = false, message = "Transaction not found or could not be deleted." });
-                }
+                return Ok(new { success = true, message = "Transaction deleted successfully." });
             }
-            catch (UserNotInHouseholdException)
+            else
             {
-                return Forbid("User is not authorized to view transactions for this household.");
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Forbid("User is not authorized to delete this transaction.");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Something went wrong.");
+                return NotFound(new { success = false, message = "Transaction not found or could not be deleted." });
             }
         }
 
@@ -145,23 +69,8 @@ namespace API.Controllers
                 return BadRequest("Financial month, and requesting user ID are required.");
             }
 
-            try
-            {
-                var transactions = await _transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
-                return Ok(transactions);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (FinancialMonthOfWrongFormatException)
-            {
-                return BadRequest("Financial month of wrong format exception");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Something went wrong.");
-            }
+            var transactions = await _transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
+            return Ok(transactions);
         }
 
 
@@ -173,19 +82,8 @@ namespace API.Controllers
                 return BadRequest("Valid year, and requesting user ID are required.");
             }
 
-            try
-            {
-                var transactions = await _transactionService.GetYearlyTransactionsByHousehold(year, requestingUserId);
-                return Ok(transactions);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Something went wrong.");
-            }
+            var transactions = await _transactionService.GetYearlyTransactionsByHousehold(year, requestingUserId);
+            return Ok(transactions);
         }
     }
 }

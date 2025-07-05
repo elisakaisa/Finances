@@ -1,3 +1,4 @@
+using API.Middleware;
 using Common.Database;
 using Common.Repositories;
 using Common.Repositories.Interfaces;
@@ -42,6 +43,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 
