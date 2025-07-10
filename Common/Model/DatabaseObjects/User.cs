@@ -12,6 +12,6 @@
         public ICollection<Transaction> Transactions { get; set; } = [];
         public ICollection<MonthlyIncomeAfterTax> MonthlyIncomesAfterTax { get; set; } = [];
 
-        public required Household Household { get; set; }
+        public Household Household { get; set; } = default!;
     }
 }

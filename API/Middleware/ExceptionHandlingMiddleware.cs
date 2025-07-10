@@ -41,7 +41,7 @@ namespace API.Middleware
                 FinancialMonthOfWrongFormatException => StatusCodes.Status400BadRequest,
                 MissingOrWrongDataException => StatusCodes.Status400BadRequest,
                 HouseholdWithMoreThanTwoUsersNotSupportedException => StatusCodes.Status400BadRequest,
-                KeyNotFoundException => StatusCodes.Status400BadRequest,
+                KeyNotFoundException => StatusCodes.Status404NotFound,
                 _ => StatusCodes.Status500InternalServerError
             };
         }
