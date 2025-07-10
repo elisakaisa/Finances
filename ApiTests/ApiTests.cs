@@ -64,6 +64,7 @@ namespace ApiTests
         {
             await _container.StopAsync();
             await _container.DisposeAsync();
+            HttpClient.Dispose();
             _factory.Dispose();
         }
 
