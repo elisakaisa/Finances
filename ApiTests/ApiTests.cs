@@ -74,13 +74,5 @@ namespace ApiTests
             contextAction(dbContext);
             if (saveChanges) await dbContext.SaveChangesAsync();
         }
-
-        [Test]
-        public async Task Test1()
-        {
-            var response = await HttpClient.GetAsync("api/generic/ping");
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.That(content, Is.Not.Null);
-        }
     }
 }
