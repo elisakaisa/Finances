@@ -17,6 +17,7 @@ namespace ApiTests
 
         private WebApplicationFactory<Program> _factory;
         private IContainer _container;
+        protected HttpClient HttpClient;
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -54,6 +55,8 @@ namespace ApiTests
             using var scope = _factory.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
             dbContext.Database.Migrate();
+
+            HttpClient = _factory.CreateClient();
         }
 
         [OneTimeTearDown]
@@ -64,11 +67,18 @@ namespace ApiTests
             _factory.Dispose();
         }
 
+        protected async Task ExecuteScopedContextAction(Action<FinancesDbContext> contextAction, bool saveChanges = true)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
+            contextAction(dbContext);
+            if (saveChanges) await dbContext.SaveChangesAsync();
+        }
+
         [Test]
         public async Task Test1()
         {
-            var client = _factory.CreateClient();
-            var response = await client.GetAsync("api/generic/ping");
+            var response = await HttpClient.GetAsync("api/generic/ping");
             var content = await response.Content.ReadAsStringAsync();
             Assert.That(content, Is.Not.Null);
         }
