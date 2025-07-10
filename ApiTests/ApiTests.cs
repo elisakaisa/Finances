@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace ApiTests
 {
     [TestFixture]
+    [Category("ApiTests")]
     public class ApiTests
     {
         private const string Database = "master";
