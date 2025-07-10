@@ -18,6 +18,9 @@ Database: SQLServer
 2. Use the SQL script in `testDatabaseData.sql` to populate the database with test data
 3. Run the API project
 
+## Run Api test
+Api tests run in test container. Docker Desktop needs to be open and running in the background.
+
 ## TODO
 - set up database -DONE
 - refine database objects
