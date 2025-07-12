@@ -6,18 +6,24 @@ namespace ApiTests.Helpers
 {
     public class UserShareSpecimenBuilder : ISpecimenBuilder
     {
+        private static readonly decimal MaxValue = 99.99m;
         public object Create(object request, ISpecimenContext context)
         {
             if (request is PropertyInfo pi &&
                 pi.Name == nameof(Transaction.UserShare) &&
-                pi.PropertyType == typeof(decimal))
+                (pi.PropertyType == typeof(decimal) || pi.PropertyType == typeof(decimal?)))
             {
-                // Generate a value between 0 and 99.99
-                var value = Math.Round((decimal)(Random.Shared.NextDouble() * 99), 2);
-                return value;
+                return GenerateRandomDecimal(0m, MaxValue, 2);
             }
 
             return new NoSpecimen();
+        }
+
+        private static decimal GenerateRandomDecimal(decimal min, decimal max, int decimals)
+        {
+            var randomDouble = Random.Shared.NextDouble();
+            decimal scaled = (decimal)randomDouble * (max - min) + min;
+            return Math.Round(scaled, decimals);
         }
     }
 }

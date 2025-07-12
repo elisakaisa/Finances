@@ -6,6 +6,7 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Testcontainers.MsSql;
 
 namespace ApiTests
 {
@@ -13,9 +14,6 @@ namespace ApiTests
     [Category("ApiTests")]
     public class ApiTestBase
     {
-        private const string Database = "master";
-        private const string Username = "sa";
-        private const string Password = "$trongPassword";
         private const ushort MsSqlPort = 1433;
 
         private WebApplicationFactory<Program> _factory;
@@ -31,9 +29,6 @@ namespace ApiTests
                 .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPortBinding(MsSqlPort, true)
                 .WithEnvironment("ACCEPT_EULA", "Y")
-                .WithEnvironment("SQLCMDUSER", Username)
-                .WithEnvironment("SQLCMDPASSWORD", Password)
-                .WithEnvironment("MSSQL_SA_PASSWORD", Password)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(MsSqlPort))
                 .Build();
 
@@ -43,8 +38,7 @@ namespace ApiTests
             var host = _container.Hostname;
             var port = _container.GetMappedPublicPort(MsSqlPort);
 
-            // Replace connection string in DbContext
-            var connectionString = $"Server={host},{port};Database={Database};User Id={Username};Password={Password};TrustServerCertificate=True";
+            var connectionString = $"server={host},{port};user id={MsSqlBuilder.DefaultUsername};password={MsSqlBuilder.DefaultPassword};database={MsSqlBuilder.DefaultDatabase}";
             _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
