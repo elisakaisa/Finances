@@ -1,6 +1,8 @@
 ﻿using AutoFixture;
 using Common.Model.DatabaseObjects;
+using Common.Model.Dtos;
 using System.Net;
+using System.Text.Json;
 
 namespace ApiTests.TransactionScenarios
 {
@@ -9,7 +11,7 @@ namespace ApiTests.TransactionScenarios
         private readonly string _transactionBaseUrl = "api/transaction";
 
         [Test]
-        public async Task CreateMonthlyTransactions_NoHousehold_Returns404()
+        public async Task GetMonthlyTransactions_NoHousehold_Returns404()
         {
             // Arrange
             var financialMonth = "202507";
@@ -28,7 +30,7 @@ namespace ApiTests.TransactionScenarios
         }
 
         [Test]
-        public async Task CreateMonthlyTransactions_UserNotInHousehold_Returns404() // TODO: this should probably not return a 404?
+        public async Task GetMonthlyTransactions_UserNotInHousehold_Returns404() // TODO: this should probably not return a 404?
         {
             // Arrange
             var financialMonth = "202507";
@@ -53,7 +55,7 @@ namespace ApiTests.TransactionScenarios
         }
 
         [Test]
-        public async Task CreateMonthlyTransactions_UserInHouseholdNoTransactions_ReturnsEmptyList()
+        public async Task GetMonthlyTransactions_UserInHouseholdNoTransactions_ReturnsEmptyList()
         {
             // Arrange
             var financialMonth = "202507";
@@ -81,17 +83,25 @@ namespace ApiTests.TransactionScenarios
         }
 
         [Test]
-        public async Task CreateMonthlyTransactions_UserInHouseholdWithTransactions_ReturnsTransactions()
+        public async Task GetMonthlyTransactions_UserInHouseholdWithTwoTransactionsInMonth_ReturnsTransactions()
         {
             // Arrange
             var financialMonth = "202507";
-            var household = new Household { Id = Guid.NewGuid(), Name = "household" };
-            var user = new User { HouseholdId = household.Id, Id = Guid.NewGuid(), Name = "name" };
+            var household = Fixture.Build<Household>().Create();
+            var user = Fixture.Build<User>().With(x => x.HouseholdId, household.Id).With(x => x.Household, household).Create();
             var category = Fixture.Build<Category>().Create();
             var subcategory = Fixture.Build<Subcategory>().With(x => x.CategoryId, category.Id).Create();
-            var transaction = Fixture.Build<Transaction>()
+            var transaction1 = Fixture.Build<Transaction>()
                 .With(x => x.UserId, user.Id)
+                .With(x => x.User, user)
                 .With(x => x.SubcategoryId, subcategory.Id)
+                .With(x => x.FinancialMonth, financialMonth)
+                .Create();
+            var transaction2 = Fixture.Build<Transaction>()
+                .With(x => x.UserId, user.Id)
+                .With(x => x.User, user)
+                .With(x => x.SubcategoryId, subcategory.Id)
+                .With(x => x.FinancialMonth, financialMonth)
                 .Create();
 
             await ExecuteScopedContextAction(context =>
@@ -100,7 +110,8 @@ namespace ApiTests.TransactionScenarios
                 context.Subcategories.Add(subcategory);
                 context.Users.Add(user);
                 context.Households.Add(household);
-                context.Transactions.Add(transaction);
+                context.Transactions.Add(transaction1);
+                context.Transactions.Add(transaction2);
             });
 
             var requestUri = $"{_transactionBaseUrl}/household/monthly-transactions?financialMonth={financialMonth}";
@@ -114,7 +125,9 @@ namespace ApiTests.TransactionScenarios
 
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            //Assert.That(content, Is.EqualTo("[]"));
+            var output = JsonSerializer.Deserialize<List<TransactionDto>>(content, JsonSerilaizerOptions);
+            Assert.That(output, Is.Not.Null);
+            Assert.That(output.Count, Is.EqualTo(2));
         }
     }
 }

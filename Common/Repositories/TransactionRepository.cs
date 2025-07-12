@@ -49,7 +49,6 @@ namespace Common.Repositories
         {
             var monthlyTransactions = await context.Transactions
                 .Include(t => t.User)
-                    .ThenInclude(t => t.Household)
                 .Include(t => t.Subcategory)
                     .ThenInclude(t => t.Category)
                 .Where(t => t.User.HouseholdId == householdId && t.FinancialMonth == monthYear)

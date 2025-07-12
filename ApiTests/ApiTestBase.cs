@@ -6,11 +6,11 @@ using DotNet.Testcontainers.Containers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using Testcontainers.MsSql;
 
 namespace ApiTests
 {
-    [TestFixture]
     [Category("ApiTests")]
     public class ApiTestBase
     {
@@ -21,10 +21,44 @@ namespace ApiTests
         protected HttpClient HttpClient;
         protected readonly Fixture Fixture = new();
 
+        protected static readonly JsonSerializerOptions JsonSerilaizerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
         {
-            // Set up Testcontainers SQL Server container
+            SetUpTestContainerSqlServer();
+            await _container.StartAsync();
+
+            ConfigureDatabase();
+            await InitializeDatabase();
+
+            HttpClient = _factory.CreateClient();
+
+            ConfigureAutoFixtureBehavior();
+        }
+
+        [OneTimeTearDown]
+        public async Task OneTimeTearDown()
+        {
+            await _container.StopAsync();
+            await _container.DisposeAsync();
+            HttpClient.Dispose();
+            await _factory.DisposeAsync();
+        }
+
+        protected async Task ExecuteScopedContextAction(Action<FinancesDbContext> contextAction, bool saveChanges = true)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
+            contextAction(dbContext);
+            if (saveChanges) await dbContext.SaveChangesAsync();
+        }
+
+        private void SetUpTestContainerSqlServer()
+        {
             _container = new ContainerBuilder()
                 .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPortBinding(MsSqlPort, true)
@@ -32,10 +66,10 @@ namespace ApiTests
                 .WithEnvironment("SA_PASSWORD", MsSqlBuilder.DefaultPassword)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(MsSqlPort))
                 .Build();
+        }
 
-            //Start Container
-            await _container.StartAsync();
-
+        private void ConfigureDatabase()
+        {
             var host = _container.Hostname;
             var port = _container.GetMappedPublicPort(MsSqlPort);
 
@@ -49,32 +83,13 @@ namespace ApiTests
                             options.UseSqlServer(connectionString));
                     });
                 });
-
-            // Initialize database
-            using var scope = _factory.Services.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
-            dbContext.Database.Migrate();
-
-            HttpClient = _factory.CreateClient();
-
-            ConfigureAutoFixtureBehavior();
         }
 
-        [OneTimeTearDown]
-        public async Task OneTimeTearDown()
-        {
-            await _container.StopAsync();
-            await _container.DisposeAsync();
-            HttpClient.Dispose();
-            _factory.Dispose();
-        }
-
-        protected async Task ExecuteScopedContextAction(Action<FinancesDbContext> contextAction, bool saveChanges = true)
+        private async Task InitializeDatabase()
         {
             using var scope = _factory.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
-            contextAction(dbContext);
-            if (saveChanges) await dbContext.SaveChangesAsync();
+            await dbContext.Database.MigrateAsync();
         }
 
         private void ConfigureAutoFixtureBehavior()
