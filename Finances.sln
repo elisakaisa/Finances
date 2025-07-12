@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "Common.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{A4D253F2-177D-40E4-B88A-96D4DD6F6992}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTests", "ApiTests\ApiTests.csproj", "{92D795B2-EC56-43D9-BDE9-F2EF4CE67CFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTests", "ApiTests\ApiTests.csproj", "{92D795B2-EC56-43D9-BDE9-F2EF4CE67CFF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{79C952B0-8B79-40E6-9BC0-294C022336DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{49B6AD59-98C3-415C-ADB6-636F0ED78293} = {79C952B0-8B79-40E6-9BC0-294C022336DF}
+		{92D795B2-EC56-43D9-BDE9-F2EF4CE67CFF} = {79C952B0-8B79-40E6-9BC0-294C022336DF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C303FCBD-7DE0-4998-A07F-08A92AFC109B}

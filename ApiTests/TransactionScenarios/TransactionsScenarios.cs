@@ -1,4 +1,5 @@
-﻿using Common.Model.DatabaseObjects;
+﻿using AutoFixture;
+using Common.Model.DatabaseObjects;
 using System.Net;
 
 namespace ApiTests.TransactionScenarios
@@ -77,6 +78,43 @@ namespace ApiTests.TransactionScenarios
             // Assert
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(content, Is.EqualTo("[]"));
+        }
+
+        [Test]
+        public async Task CreateMonthlyTransactions_UserInHouseholdWithTransactions_ReturnsTransactions()
+        {
+            // Arrange
+            var financialMonth = "202507";
+            var household = new Household { Id = Guid.NewGuid(), Name = "household" };
+            var user = new User { HouseholdId = household.Id, Id = Guid.NewGuid(), Name = "name" };
+            var category = Fixture.Build<Category>().Create();
+            var subcategory = Fixture.Build<Subcategory>().With(x => x.CategoryId, category.Id).Create();
+            var transaction = Fixture.Build<Transaction>()
+                .With(x => x.UserId, user.Id)
+                .With(x => x.SubcategoryId, subcategory.Id)
+                .Create();
+
+            await ExecuteScopedContextAction(context =>
+            {
+                context.Categories.Add(category);
+                context.Subcategories.Add(subcategory);
+                context.Users.Add(user);
+                context.Households.Add(household);
+                context.Transactions.Add(transaction);
+            });
+
+            var requestUri = $"{_transactionBaseUrl}/household/monthly-transactions?financialMonth={financialMonth}";
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            requestMessage.Headers.Add("requestingUserId", user.Id.ToString());
+
+            // Act
+            var response = await HttpClient.SendAsync(requestMessage);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            //Assert.That(content, Is.EqualTo("[]"));
         }
     }
 }

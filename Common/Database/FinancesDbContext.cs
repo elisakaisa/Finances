@@ -28,6 +28,14 @@ namespace Common.Database
                 .Property(t => t.UserShare)
                 .HasPrecision(4, 2);
 
+            modelBuilder.Entity<Category>()
+                .Property(c => c.Id)
+                .ValueGeneratedNever();
+
+            modelBuilder.Entity<Subcategory>()
+                .Property(s => s.Id)
+                .ValueGeneratedNever();
+
             base.OnModelCreating(modelBuilder);
         }
     }

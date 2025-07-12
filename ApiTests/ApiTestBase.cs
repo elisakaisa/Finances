@@ -1,3 +1,5 @@
+using ApiTests.Helpers;
+using AutoFixture;
 using Common.Database;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -19,6 +21,7 @@ namespace ApiTests
         private WebApplicationFactory<Program> _factory;
         private IContainer _container;
         protected HttpClient HttpClient;
+        protected readonly Fixture Fixture = new ();
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()
@@ -58,6 +61,8 @@ namespace ApiTests
             dbContext.Database.Migrate();
 
             HttpClient = _factory.CreateClient();
+
+            ConfigureAutoFixtureBehavior();
         }
 
         [OneTimeTearDown]
@@ -75,6 +80,14 @@ namespace ApiTests
             var dbContext = scope.ServiceProvider.GetRequiredService<FinancesDbContext>();
             contextAction(dbContext);
             if (saveChanges) await dbContext.SaveChangesAsync();
+        }
+
+        private void ConfigureAutoFixtureBehavior()
+        {
+            Fixture.Behaviors.Remove(new ThrowingRecursionBehavior());
+            Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+            Fixture.Customizations.Add(new UserShareSpecimenBuilder());
+            Fixture.Customizations.Add(new DateOnlySpecimenBuilder());
         }
     }
 }
