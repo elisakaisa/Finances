@@ -4,6 +4,6 @@ namespace Common.Repositories.Interfaces
 {
     public interface IHouseholdRepository : IRepository<Household>
     {
-        Task<Household> GetHouseholdByUserId(Guid userId);
+        Task<Household?> GetHouseholdByUserId(Guid userId);
     }
 }

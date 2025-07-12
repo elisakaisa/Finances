@@ -56,8 +56,7 @@ namespace Common.Services
 
         private async Task<Household> GetHousehold(Guid user)
         {
-            var household = await _householdRepository.GetHouseholdByUserId(user);
-
+            var household = await _householdRepository.GetHouseholdByUserId(user) ?? throw new KeyNotFoundException();
             if (household.Users.Count > 2)
             {
                 throw new HouseholdWithMoreThanTwoUsersNotSupportedException();

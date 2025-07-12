@@ -64,11 +64,6 @@ namespace API.Controllers
         [HttpGet("household/monthly-transactions")]
         public async Task<IActionResult> GetMonthlyTransactionsByHousehold([FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            if (financialMonth == null || !financialMonth.IsFinancialMonthOfCorrectFormat() || requestingUserId == Guid.Empty)
-            {
-                return BadRequest("Financial month, and requesting user ID are required.");
-            }
-
             var transactions = await _transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
             return Ok(transactions);
         }

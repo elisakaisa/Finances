@@ -65,8 +65,8 @@ namespace Common.Services
 
         public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByHousehold(string financialMonth, Guid requestingUserId)
         {
-            ValidateFinancialMonth(financialMonth);
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
+            financialMonth.ValidateFinancialMonthFormat();
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
             return transactions.ConvertToDto();
@@ -74,7 +74,7 @@ namespace Common.Services
 
         public async Task<ICollection<TransactionDto>> GetMonthlyTransactionsByUserId(Guid userId, string financialMonth, Guid requestingUserId)
         {
-            ValidateFinancialMonth(financialMonth);
+            financialMonth.ValidateFinancialMonthFormat();
             var userToGetTransactionsFrom = await _userRepository.GetByIdAsync(userId);
             await ValidateThatUserIsInHousehold(requestingUserId, userToGetTransactionsFrom.HouseholdId);
 
@@ -84,7 +84,7 @@ namespace Common.Services
 
         public async Task<ICollection<TransactionDto>> GetYearlyTransactionsByHousehold(int year, Guid requestingUserId)
         {
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
             var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
             return transactions.ConvertToDto();
         }
@@ -128,7 +128,7 @@ namespace Common.Services
             {
                 throw new MissingOrWrongDataException("Mandatory fields are not filled");
             }
-            ValidateFinancialMonth(transactionDto.FinancialMonth);
+            transactionDto.FinancialMonth.ValidateFinancialMonthFormat();
 
             var transactionTypeEnumValue = transactionDto.TransactionType.ConvertTransactionTypeToDb();
             var splitTypeEnumValue = transactionDto.SplitType.ConvertSplitTypeToDb();
@@ -154,15 +154,6 @@ namespace Common.Services
             //{
             //    throw new SubcategoryNotContainedInCategoryException();
             //}
-        }
-
-
-        private static void ValidateFinancialMonth(string financialMonth)
-        {
-            if (!financialMonth.IsFinancialMonthOfCorrectFormat())
-            {
-                throw new FinancialMonthOfWrongFormatException();
-            }
         }
 
         private static bool MandatoryFieldsAreFilled(TransactionDto transaction)

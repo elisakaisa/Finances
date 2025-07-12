@@ -3,7 +3,7 @@ using System.Net;
 
 namespace ApiTests.TransactionScenarios
 {
-    public class TransactionsScenarios : ApiTests
+    public class TransactionsScenarios : ApiTestBase
     {
         private readonly string _transactionBaseUrl = "api/transaction";
 

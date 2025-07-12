@@ -34,13 +34,12 @@ namespace Common.Repositories
             return household ?? throw new KeyNotFoundException($"Transaction with ID {id} was not found.");
         }
 
-        public async Task<Household> GetHouseholdByUserId(Guid userId)
+        public async Task<Household?> GetHouseholdByUserId(Guid userId)
         {
-            var household = await _dbContext.Households
+            return await _dbContext.Households
                 .AsNoTracking()
                 .Include(h => h.Users)
                 .FirstOrDefaultAsync(h => h.Users.Any(u => u.Id == userId));
-            return household ?? throw new KeyNotFoundException();
         }
 
         public Task<Household> UpdateAsync(Household entity)

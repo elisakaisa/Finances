@@ -9,7 +9,7 @@ namespace ApiTests
 {
     [TestFixture]
     [Category("ApiTests")]
-    public class ApiTests
+    public class ApiTestBase
     {
         private const string Database = "master";
         private const string Username = "sa";

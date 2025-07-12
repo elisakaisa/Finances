@@ -23,8 +23,8 @@ namespace Common.Services
 
         public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid requestingUserId)
         {
-            ValidateFinancialMonth(financialMonth);
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
+            financialMonth.ValidateFinancialMonthFormat();
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
 
             var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
             var subcategories = await _subcategoryRepository.GetAllAsync();
@@ -34,7 +34,7 @@ namespace Common.Services
 
         public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid requestingUserId)
         {
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId);
+            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
 
             var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
             var subcategories = await _subcategoryRepository.GetAllAsync();
@@ -49,14 +49,6 @@ namespace Common.Services
             }
 
             return householdLevelMonthlySummaries;
-        }
-
-        private static void ValidateFinancialMonth(string financialMonth)
-        {
-            if (!financialMonth.IsFinancialMonthOfCorrectFormat())
-            {
-                throw new FinancialMonthOfWrongFormatException();
-            }
         }
 
 
