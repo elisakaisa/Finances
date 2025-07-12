@@ -10,6 +10,6 @@ namespace Common.Model.DatabaseObjects
         public TransactionType TransactionType { get; set; }
 
         // Navigation property: category has many categories
-        public ICollection<Subcategory> Subcategories { get; set; }
+        public ICollection<Subcategory> Subcategories { get; set; } = [];
     }
 }

@@ -14,6 +14,6 @@ namespace Common.Model.DatabaseObjects
         public int CategoryId { get; set; }
 
         // Navigation property: each subcategory belongs to 1 category
-        public required Category Category { get; set; }
+        public Category Category { get; set; } = default!;
     }
 }

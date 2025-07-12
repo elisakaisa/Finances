@@ -2,18 +2,11 @@
 using Common.Model.DatabaseObjects;
 using Common.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace Common.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(FinancesDbContext dbContext) : IUserRepository
     {
-        private readonly FinancesDbContext _dbContext;
-
-        public UserRepository(FinancesDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
         public Task<User> CreateAsync(User entity)
         {
             throw new NotImplementedException();
@@ -26,7 +19,7 @@ namespace Common.Repositories
 
         public async Task<User> GetByIdAsync(Guid id)
         {
-            var user = await _dbContext.Users
+            var user = await dbContext.Users
                 .AsNoTracking()
                 .Include(u => u.Household)
                 .FirstOrDefaultAsync(u => u.Id == id);

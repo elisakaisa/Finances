@@ -4,7 +4,7 @@ namespace Common.Services.Interfaces
 {
     public interface IRepartitionService
     {
-        Task<Repartition> GetMonthlyHouseholdRepartition(string monthYear, Guid requestingUser);
-        Task<List<Repartition>> GetYearlyHouseholdRepartition(int year, Guid requestingUser);
+        Task<Repartition> GetMonthlyHouseholdRepartition(string monthYear, Guid requestingUserId);
+        Task<List<Repartition>> GetYearlyHouseholdRepartition(int year, Guid requestingUserId);
     }
 }

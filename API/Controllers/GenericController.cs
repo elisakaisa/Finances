@@ -7,6 +7,7 @@ namespace API.Controllers
     public class GenericController : ControllerBase
     {
         [HttpGet("ping")]
+        [ProducesResponseType<DateTime>(StatusCodes.Status200OK)]
         public IActionResult Ping()
         {
             return Ok(DateTime.Now);

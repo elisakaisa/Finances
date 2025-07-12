@@ -35,6 +35,17 @@ namespace Common.Utils.Extensions
             return transactions.Select(transaction => transaction.ConvertToDto()).ToList();
         }
 
+        public static MonthlyIncomeAfterTaxDto ConvertToDto(this MonthlyIncomeAfterTax monthlyIncomeAfterTax)
+        {
+            return new MonthlyIncomeAfterTaxDto
+            {
+                Id = monthlyIncomeAfterTax.Id,
+                IncomeAfterTax = monthlyIncomeAfterTax.IncomeAfterTax,
+                FinancialMonth = monthlyIncomeAfterTax.FinancialMonth,
+                UserId = monthlyIncomeAfterTax.UserId
+            };
+        }
+
         public static Transaction ConvertToDbObject(this TransactionDto transactionDto, User user, Subcategory subcategory)
         {
             return new Transaction
@@ -56,17 +67,6 @@ namespace Common.Utils.Extensions
                 Subcategory = subcategory,
                 UserId = user.Id,
                 User = user
-            };
-        }
-
-        public static MonthlyIncomeAfterTaxDto ConvertToDto(this MonthlyIncomeAfterTax monthlyIncomeAfterTax)
-        {
-            return new MonthlyIncomeAfterTaxDto
-            {
-                Id = monthlyIncomeAfterTax.Id,
-                IncomeAfterTax = monthlyIncomeAfterTax.IncomeAfterTax,
-                FinancialMonth = monthlyIncomeAfterTax.FinancialMonth,
-                UserId = monthlyIncomeAfterTax.UserId
             };
         }
 

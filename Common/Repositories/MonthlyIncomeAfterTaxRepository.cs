@@ -5,20 +5,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
-    public class MonthlyIncomeAfterTaxRepository : IMonthlyIncomeAfterTaxRepository
+    public class MonthlyIncomeAfterTaxRepository(FinancesDbContext context) : IMonthlyIncomeAfterTaxRepository
     {
-        public readonly FinancesDbContext _dbContext;
-
-        public MonthlyIncomeAfterTaxRepository(FinancesDbContext context)
-        {
-            _dbContext = context;
-        }
         public async Task<MonthlyIncomeAfterTax> CreateAsync(MonthlyIncomeAfterTax entity)
         {
-            _dbContext.Users.Attach(entity.User);
+            context.Users.Attach(entity.User);
 
-            await _dbContext.MonthlyIncomesAfterTax.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await context.MonthlyIncomesAfterTax.AddAsync(entity);
+            await context.SaveChangesAsync();
             return entity;
         }
 
@@ -34,7 +28,7 @@ namespace Common.Repositories
 
         public async Task<ICollection<MonthlyIncomeAfterTax>> GetMonthlyIncomeAfterTaxByHouseholdIdAsync(Guid householdId, string monthYear)
         {
-            var monthlyIncomes = await _dbContext.MonthlyIncomesAfterTax
+            var monthlyIncomes = await context.MonthlyIncomesAfterTax
                 .Include(i => i.User)
                     .ThenInclude(t => t.Household)
                 .Where(i => i.User.HouseholdId == householdId && i.FinancialMonth == monthYear)
@@ -45,7 +39,7 @@ namespace Common.Repositories
         public async Task<ICollection<MonthlyIncomeAfterTax>> GetYearlyIncomeAfterTaxByHouseholdIdAsync(Guid householdId, int year)
         {
             var yearS = year.ToString();
-            var monthlyIncomes = await _dbContext.MonthlyIncomesAfterTax
+            var monthlyIncomes = await context.MonthlyIncomesAfterTax
                 .Include(i => i.User)
                     .ThenInclude(t => t.Household)
                 .Where(i => i.User.HouseholdId == householdId && i.FinancialMonth.StartsWith(yearS))
@@ -65,10 +59,10 @@ namespace Common.Repositories
 
         public async Task<MonthlyIncomeAfterTax> UpdateAsync(MonthlyIncomeAfterTax entity)
         {
-            _dbContext.Users.Attach(entity.User);
+            context.Users.Attach(entity.User);
 
-            _dbContext.MonthlyIncomesAfterTax.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            context.MonthlyIncomesAfterTax.Update(entity);
+            await context.SaveChangesAsync();
             return entity;
         }
     }

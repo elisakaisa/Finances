@@ -5,15 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
-    public class HouseholdRepository : IHouseholdRepository
+    public class HouseholdRepository(FinancesDbContext dbContext) : IHouseholdRepository
     {
-        private readonly FinancesDbContext _dbContext;
-
-        public HouseholdRepository(FinancesDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
-
         public Task<Household> CreateAsync(Household entity)
         {
             throw new NotImplementedException();
@@ -26,7 +19,7 @@ namespace Common.Repositories
 
         public async Task<Household> GetByIdAsync(Guid id)
         {
-            var household = await _dbContext.Households
+            var household = await dbContext.Households
                             .AsNoTracking()
                             .Include(h => h.Users)
                             .FirstOrDefaultAsync(h => h.Id == id);
@@ -36,7 +29,7 @@ namespace Common.Repositories
 
         public async Task<Household?> GetHouseholdByUserId(Guid userId)
         {
-            return await _dbContext.Households
+            return await dbContext.Households
                 .AsNoTracking()
                 .Include(h => h.Users)
                 .FirstOrDefaultAsync(h => h.Users.Any(u => u.Id == userId));

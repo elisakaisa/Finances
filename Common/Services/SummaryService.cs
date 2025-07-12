@@ -8,36 +8,25 @@ using Common.Utils.Extensions;
 
 namespace Common.Services
 {
-    public class SummaryService : ISummaryService
+    public class SummaryService(ITransactionRepository transactionRepository, ISubcategoryRepository subcategoryRepository, IHouseholdRepository householdRepository) : ISummaryService
     {
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly ISubcategoryRepository _subcategoryRepository;
-        private readonly IHouseholdRepository _householdRepository;
-
-        public SummaryService(ITransactionRepository transactionRepo, ISubcategoryRepository subcategoryRepo, IHouseholdRepository householdRepo)
-        {
-            _transactionRepository = transactionRepo;
-            _subcategoryRepository = subcategoryRepo;
-            _householdRepository = householdRepo;
-        }
-
         public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByMonthAndHouseholdId(string financialMonth, Guid requestingUserId)
         {
             financialMonth.ValidateFinancialMonthFormat();
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
+            var household = await householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
 
-            var transactions = await _transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
-            var subcategories = await _subcategoryRepository.GetAllAsync();
+            var transactions = await transactionRepository.GetMonthlyTransactionsByHouseholdIdAsync(household.Id, financialMonth);
+            var subcategories = await subcategoryRepository.GetAllAsync();
 
             return CalculateHouseholdLevelMonthlySummaries(transactions, subcategories, household, financialMonth);
         }
 
         public async Task<List<HouseholdLevelMonthlySummary>> GetMonthlyTransactionsByYearAndHouseholdId(int year, Guid requestingUserId)
         {
-            var household = await _householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
+            var household = await householdRepository.GetHouseholdByUserId(requestingUserId) ?? throw new KeyNotFoundException();
 
-            var transactions = await _transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
-            var subcategories = await _subcategoryRepository.GetAllAsync();
+            var transactions = await transactionRepository.GetYearlyTransactionsByHouseholdIdAsync(household.Id, year);
+            var subcategories = await subcategoryRepository.GetAllAsync();
 
             var householdLevelMonthlySummaries = new List<HouseholdLevelMonthlySummary>();
 

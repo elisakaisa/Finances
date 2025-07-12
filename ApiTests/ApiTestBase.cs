@@ -29,6 +29,7 @@ namespace ApiTests
                 .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPortBinding(MsSqlPort, true)
                 .WithEnvironment("ACCEPT_EULA", "Y")
+                .WithEnvironment("SA_PASSWORD", MsSqlBuilder.DefaultPassword)
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(MsSqlPort))
                 .Build();
 
@@ -38,7 +39,7 @@ namespace ApiTests
             var host = _container.Hostname;
             var port = _container.GetMappedPublicPort(MsSqlPort);
 
-            var connectionString = $"server={host},{port};user id={MsSqlBuilder.DefaultUsername};password={MsSqlBuilder.DefaultPassword};database={MsSqlBuilder.DefaultDatabase}";
+            var connectionString = $"server={host},{port};user id={MsSqlBuilder.DefaultUsername};password={MsSqlBuilder.DefaultPassword};database={MsSqlBuilder.DefaultDatabase};TrustServerCertificate=True";
             _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {

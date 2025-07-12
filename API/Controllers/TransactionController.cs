@@ -1,6 +1,5 @@
 using Common.Model.Dtos;
 using Common.Services.Interfaces;
-using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,21 +7,12 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TransactionController : ControllerBase
+    public class TransactionController(ILogger<TransactionController> logger, ITransactionService transactionService) : ControllerBase
     {
-        private readonly ILogger<TransactionController> _logger;
-        private readonly ITransactionService _transactionService;
-
-        public TransactionController(ILogger<TransactionController> logger, ITransactionService transactionService)
-        {
-            _logger = logger;
-            _transactionService = transactionService;
-        }
-
         [HttpPost("create")]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionDto transaction, [FromHeader] Guid userId)
         {
-            var createdTransaction = await _transactionService.CreateAsync(transaction, userId);
+            var createdTransaction = await transactionService.CreateAsync(transaction, userId);
             return Ok(createdTransaction);
         }
 
@@ -34,7 +24,7 @@ namespace API.Controllers
             // probs this kind of thing used if using 3rd party provider
             var requestingUserId = Guid.Parse(User.FindFirst("userId")?.Value ?? string.Empty);
 
-            var updatedTransaction = await _transactionService.UpdateAsync(transactionDto, requestingUserId);
+            var updatedTransaction = await transactionService.UpdateAsync(transactionDto, requestingUserId);
 
             if (updatedTransaction == null)
             {
@@ -48,7 +38,7 @@ namespace API.Controllers
         [Route("delete")]
         public async Task<IActionResult> DeleteTransaction([FromBody] TransactionDto transactionDto, [FromQuery] Guid requestingUserId)
         {
-            bool result = await _transactionService.DeleteAsync(transactionDto, requestingUserId);
+            bool result = await transactionService.DeleteAsync(transactionDto, requestingUserId);
 
             if (result)
             {
@@ -64,7 +54,7 @@ namespace API.Controllers
         [HttpGet("household/monthly-transactions")]
         public async Task<IActionResult> GetMonthlyTransactionsByHousehold([FromQuery] string financialMonth, [FromHeader] Guid requestingUserId)
         {
-            var transactions = await _transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
+            var transactions = await transactionService.GetMonthlyTransactionsByHousehold(financialMonth, requestingUserId);
             return Ok(transactions);
         }
 
@@ -72,12 +62,7 @@ namespace API.Controllers
         [HttpGet("household/yearly-transactions")]
         public async Task<IActionResult> GetYearlyTransactionsByHousehold([FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            if (!year.IsYearOfCorrectFormat() || requestingUserId == Guid.Empty)
-            {
-                return BadRequest("Valid year, and requesting user ID are required.");
-            }
-
-            var transactions = await _transactionService.GetYearlyTransactionsByHousehold(year, requestingUserId);
+            var transactions = await transactionService.GetYearlyTransactionsByHousehold(year, requestingUserId);
             return Ok(transactions);
         }
     }

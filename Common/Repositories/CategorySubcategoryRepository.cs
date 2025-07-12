@@ -6,24 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Common.Repositories
 {
-    public class CategorySubcategoryRepository : ICategoryRepository, ISubcategoryRepository
+    public class CategorySubcategoryRepository(FinancesDbContext context) : ICategoryRepository, ISubcategoryRepository
     {
-        public readonly FinancesDbContext _dbContext;
-
-        public CategorySubcategoryRepository(FinancesDbContext context)
-        {
-            _dbContext = context;
-        }
-
         async Task<ICollection<Category>> ICategoryRepository.GetAllAsync()
         {
-            var categories = await _dbContext.Categories.ToListAsync();
+            var categories = await context.Categories.ToListAsync();
             return categories;
         }
 
         async Task<ICollection<Category>> ICategoryRepository.GetAllAsyncByTransactionType(TransactionType type)
         {
-            var categories = await _dbContext.Categories
+            var categories = await context.Categories
                 .AsNoTracking()
                 .Include(c => c.Subcategories) 
                 .Where(c => c.TransactionType == type)
@@ -33,7 +26,7 @@ namespace Common.Repositories
 
         public async Task<ICollection<Subcategory>> GetSubcategoryByCategoryIdAsync(int categoryId)
         {
-            var categorysSubcategories = await _dbContext.Subcategories
+            var categorysSubcategories = await context.Subcategories
                 .AsNoTracking()
                 .Include(s => s.Category)
                 .Where(s => s.CategoryId == categoryId)
@@ -43,7 +36,7 @@ namespace Common.Repositories
 
         async Task<ICollection<Subcategory>> ISubcategoryRepository.GetAllAsync()
         {
-            var subcategories = await _dbContext.Subcategories
+            var subcategories = await context.Subcategories
                 .AsNoTracking()
                 .Include(s => s.Category)
                 .ToListAsync();
@@ -52,7 +45,7 @@ namespace Common.Repositories
 
         public async Task<Subcategory> GetSubcategoryByName(string name)
         {
-            var category = await _dbContext.Subcategories
+            var category = await context.Subcategories
                 .AsNoTracking()
                 .Include(s => s.Category)
                 .Where(s => s.Name == name)
