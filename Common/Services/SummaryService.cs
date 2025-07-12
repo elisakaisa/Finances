@@ -1,9 +1,8 @@
 ﻿using Common.Model.DatabaseObjects;
-using Common.Model.Enums;
 using Common.Model.Dtos;
+using Common.Model.Enums;
 using Common.Repositories.Interfaces;
 using Common.Services.Interfaces;
-using Common.Utils.Exceptions;
 using Common.Utils.Extensions;
 
 namespace Common.Services
@@ -71,7 +70,7 @@ namespace Common.Services
             };
         }
 
-        private static UserLevelMonthlySummary CalculateUserSummaryForSubcategory(ICollection<Transaction> transactions, User user,  Subcategory subcategory)
+        private static UserLevelMonthlySummary CalculateUserSummaryForSubcategory(ICollection<Transaction> transactions, User user, Subcategory subcategory)
         {
             var userTransactionsBySubcategory = transactions.Where(t => t.UserId == user.Id && t.SubcategoryId == subcategory.Id);
             var individualTotal = userTransactionsBySubcategory.Where(t => t.SplitType == SplitType.Individual).Sum(t => t.Amount);

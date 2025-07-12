@@ -35,8 +35,8 @@ namespace Common.Services
 
         private static void ValidateMonthlyIncomeData(MonthlyIncomeAfterTaxDto monthlyIncomeAfterTaxDto)
         {
-            if (monthlyIncomeAfterTaxDto == null || 
-                monthlyIncomeAfterTaxDto.Id == Guid.Empty || 
+            if (monthlyIncomeAfterTaxDto == null ||
+                monthlyIncomeAfterTaxDto.Id == Guid.Empty ||
                 !monthlyIncomeAfterTaxDto.FinancialMonth.IsFinancialMonthOfCorrectFormat() ||
                 monthlyIncomeAfterTaxDto.UserId == Guid.Empty)
             {

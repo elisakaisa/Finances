@@ -1,6 +1,4 @@
-﻿using Common.Model.Enums;
-
-namespace Common.Model.Dtos
+﻿namespace Common.Model.Dtos
 {
     public class HouseholdLevelMonthlySummary
     {

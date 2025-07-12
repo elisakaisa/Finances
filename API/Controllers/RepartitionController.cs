@@ -1,6 +1,4 @@
 ﻿using Common.Services.Interfaces;
-using Common.Utils.Exceptions;
-using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -19,7 +17,7 @@ namespace API.Controllers
         [HttpGet("household/yearly-repartition")]
         public async Task<IActionResult> GetYearlyHouseholdByHouseholdId([FromQuery] int year, [FromHeader] Guid requestingUserId)
         {
-            var repartitions = await repartitionService.GetYearlyHouseholdRepartition( year, requestingUserId);
+            var repartitions = await repartitionService.GetYearlyHouseholdRepartition(year, requestingUserId);
             return Ok(repartitions);
         }
     }

@@ -1,6 +1,4 @@
 ﻿using Common.Services.Interfaces;
-using Common.Utils.Exceptions;
-using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

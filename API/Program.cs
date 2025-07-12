@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var dbConnectionString = builder.Configuration.GetConnectionString("DbConnection");
-builder.Services.AddDbContext<FinancesDbContext>(options => 
+builder.Services.AddDbContext<FinancesDbContext>(options =>
     options.UseSqlServer(dbConnectionString));
 
 // Register repositories

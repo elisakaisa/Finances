@@ -1,9 +1,8 @@
 ﻿using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Tests.TestData;
-using Moq;
-using System.Text.RegularExpressions;
 using Common.Utils.Extensions;
+using Moq;
 
 namespace Common.Tests.ISummaryService
 {
@@ -42,8 +41,8 @@ namespace Common.Tests.ISummaryService
 
             // assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result, Has.Count.EqualTo(12*subcategories.Count));
-            foreach(var row in result)
+            Assert.That(result, Has.Count.EqualTo(12 * subcategories.Count));
+            foreach (var row in result)
             {
                 Assert.That(row.FinancialMonth.IsFinancialMonthOfCorrectFormat(), Is.True);
             }

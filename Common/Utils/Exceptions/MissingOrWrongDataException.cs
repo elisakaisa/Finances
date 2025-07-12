@@ -4,6 +4,6 @@
     {
         public MissingOrWrongDataException() { }
         public MissingOrWrongDataException(string message) : base(message) { }
-        public MissingOrWrongDataException(string message, Exception innerException) : base(message, innerException){ }
+        public MissingOrWrongDataException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

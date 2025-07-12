@@ -6,6 +6,6 @@
 
         public SubcategoryNotContainedInCategoryException(string message) : base(message) { }
 
-        public SubcategoryNotContainedInCategoryException(string message,  Exception innerException) : base(message, innerException) { }
+        public SubcategoryNotContainedInCategoryException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

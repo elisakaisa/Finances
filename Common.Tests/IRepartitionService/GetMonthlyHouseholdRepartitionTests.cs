@@ -95,7 +95,7 @@ namespace Common.Tests.IRepartitionService
             Assert.Multiple(() =>
             {
                 Assert.That(result.TotalCommonExpenses, Is.EqualTo(testTransactions.SumCommonExpensesByHousehold(Household1Id)));
-                Assert.That(result.TargetUserShare[User1Hh1Id], Is.EqualTo(0.5m)); 
+                Assert.That(result.TargetUserShare[User1Hh1Id], Is.EqualTo(0.5m));
                 Assert.That(result.TargetUserShare[User2Hh1Id], Is.EqualTo(0.5m));
                 Assert.That(result.TotalCommonExpensesPaidByUser[User1Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User1Hh1Id)));
                 Assert.That(result.TotalCommonExpensesPaidByUser[User2Hh1Id], Is.EqualTo(testTransactions.SumCommonExpensesByUser(User2Hh1Id)));

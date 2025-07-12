@@ -1,6 +1,5 @@
 using Common.Model.Dtos;
 using Common.Services.Interfaces;
-using Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers

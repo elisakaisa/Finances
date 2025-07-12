@@ -33,7 +33,7 @@ namespace ApiTests.TransactionScenarios
             // Arrange
             var financialMonth = "202507";
             var invalidUserId = Guid.NewGuid();
-            var household = new Household { Id = Guid.NewGuid(), Name = "household"};
+            var household = new Household { Id = Guid.NewGuid(), Name = "household" };
 
             await ExecuteScopedContextAction(context =>
             {
@@ -57,7 +57,7 @@ namespace ApiTests.TransactionScenarios
         {
             // Arrange
             var financialMonth = "202507";
-            var household = new Household { Id = Guid.NewGuid(), Name = "household"};
+            var household = new Household { Id = Guid.NewGuid(), Name = "household" };
             var user = new User { HouseholdId = household.Id, Id = Guid.NewGuid(), Name = "name" };
 
             await ExecuteScopedContextAction(context =>

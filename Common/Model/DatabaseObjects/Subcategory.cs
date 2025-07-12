@@ -8,7 +8,7 @@ namespace Common.Model.DatabaseObjects
         public required string Name { get; set; }
         public State State { get; set; }
         public TransactionType TransactionType { get; set; }
-        public int DisplayOrder {  get; set; }
+        public int DisplayOrder { get; set; }
 
         // FK
         public int CategoryId { get; set; }

@@ -62,7 +62,7 @@ namespace Common.Utils.Extensions
         #endregion
 
 
-        public static bool IsTransactionCommon(this Transaction transaction) 
+        public static bool IsTransactionCommon(this Transaction transaction)
         {
             if (transaction.TransactionType != TransactionType.Expenses) return false;
             if (transaction.SplitType == SplitType.Individual) return false;

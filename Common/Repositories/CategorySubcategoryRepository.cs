@@ -18,7 +18,7 @@ namespace Common.Repositories
         {
             var categories = await context.Categories
                 .AsNoTracking()
-                .Include(c => c.Subcategories) 
+                .Include(c => c.Subcategories)
                 .Where(c => c.TransactionType == type)
                 .ToListAsync();
             return categories;

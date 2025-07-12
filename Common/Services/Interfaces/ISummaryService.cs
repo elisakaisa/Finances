@@ -1,5 +1,4 @@
-﻿using Common.Model.DatabaseObjects;
-using Common.Model.Dtos;
+﻿using Common.Model.Dtos;
 
 namespace Common.Services.Interfaces
 {

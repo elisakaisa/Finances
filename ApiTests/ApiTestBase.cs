@@ -19,7 +19,7 @@ namespace ApiTests
         private WebApplicationFactory<Program> _factory;
         private IContainer _container;
         protected HttpClient HttpClient;
-        protected readonly Fixture Fixture = new ();
+        protected readonly Fixture Fixture = new();
 
         [OneTimeSetUp]
         public async Task OneTimeSetUp()

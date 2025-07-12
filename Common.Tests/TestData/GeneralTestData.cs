@@ -75,7 +75,7 @@ namespace Common.Tests.TestData
             Name = "Salary",
             CategoryId = 1,
             State = State.Active,
-            Category = new Category { Name = "test"}
+            Category = new Category { Name = "test" }
         };
 
         public static Subcategory IncomeMisc = new()

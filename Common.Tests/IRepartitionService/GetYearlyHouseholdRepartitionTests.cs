@@ -2,7 +2,6 @@
 using Common.Repositories.Interfaces;
 using Common.Services;
 using Common.Tests.TestData;
-using Common.Utils.Exceptions;
 using Moq;
 
 namespace Common.Tests.IRepartitionService
@@ -47,7 +46,7 @@ namespace Common.Tests.IRepartitionService
 
             // Act
             var sut = new RepartitionService(_transactionRepo.Object, _monthlyIncomeAfterTaxRepo.Object, _householdRepository.Object);
-            var result = await sut.GetYearlyHouseholdRepartition( 2024, User1Hh1Id);
+            var result = await sut.GetYearlyHouseholdRepartition(2024, User1Hh1Id);
 
             // Assert
             Assert.That(result, Is.Not.Null);

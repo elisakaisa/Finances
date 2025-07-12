@@ -85,7 +85,7 @@ namespace Common.Tests.ISummaryService
                 Assert.That(resultElectricity2.Year, Is.EqualTo(2024));
                 Assert.That(resultSalary2.FinancialMonth, Is.EqualTo(financialMonth));
                 Assert.That(resultSalary2.Year, Is.EqualTo(2024));
-                Assert.That(resultElectricity2.Total, Is.EqualTo(20+35));
+                Assert.That(resultElectricity2.Total, Is.EqualTo(20 + 35));
                 Assert.That(resultElectricity2.CommonTotal, Is.EqualTo(20));
                 Assert.That(resultSalary2.Total, Is.EqualTo(40));
                 Assert.That(resultSalary2.CommonTotal, Is.EqualTo(0));
