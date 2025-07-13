@@ -22,10 +22,10 @@ jobs:
         dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
+    # - name: Build
+    #   run: dotnet build --no-restore
     - name: Test with coverage
-      run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+      run: dotnet test --configuration Release --collect:"XPlat Code Coverage"
 
     - name: Generate coverage report
       uses: danielpalme/ReportGenerator-GitHub-Action@v5
