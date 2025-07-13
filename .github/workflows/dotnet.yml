@@ -39,3 +39,13 @@ jobs:
       with:
         name: code-coverage-report
         path: coveragereport
+
+    - name: Generate Markdown summary
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5
+      with:
+        reports: '**/coverage.cobertura.xml'
+        targetdir: 'coveragereport'
+        reporttypes: 'MarkdownSummary;Cobertura'
+
+    - name: Append Markdown summary to GitHub summary
+      run: cat coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
